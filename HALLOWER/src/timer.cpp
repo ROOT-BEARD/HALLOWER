@@ -1,30 +1,36 @@
 #include "Timer.h"
 #include "raylib.h"
 
-//Default constructor
-Timer::Timer(){
+// Default constructor
+Timer::Timer()
+{
     time = 0.0f;
     tarTime = 0.0f;
     running = false;
 }
 
-Timer::Timer(float tarTime){
+Timer::Timer(float tarTime)
+{
     time = 0.0f;
     this->tarTime = tarTime;
 }
 
-void Timer::Start(){
+void Timer::Start()
+{
     running = true;
 }
 
-void Timer::Reset(){
+void Timer::Reset()
+{
     running = false;
     time = 0.0f;
 }
 
-bool Timer::TimeOut(){
+bool Timer::TimeOut()
+{
     bool complete = false;
-    if(time >= tarTime){    
+    if (time >= tarTime)
+    {
         complete = true;
         time = 0.0;
         running = false;
@@ -32,6 +38,8 @@ bool Timer::TimeOut(){
     return complete;
 }
 
-void Timer::Update(){
-    if(running) time += GetFrameTime();
+void Timer::Update()
+{
+    if (running)
+        time += GetFrameTime();
 }

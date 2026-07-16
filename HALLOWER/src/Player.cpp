@@ -3,7 +3,8 @@
 #include "iostream"
 #include "cmath"
 
-Player::Player(){
+Player::Player()
+{
     renderDir = Vector2{0.0f, 0.0f};
     dir = Vector2{0.0f, 0.0f};
     zPos = 0;
@@ -29,177 +30,221 @@ Player::Player(){
     playerRender = LoadTexture("Art/characterSheet.png");
 }
 
-// gets two varibes and returns a normalized vector 
-Vector2 Player::Normalize(Vector2 oldDir){
+// gets two varibes && returns a normalized vector
+Vector2 Player::Normalize(Vector2 oldDir)
+{
     Vector2 normalVec;
     /*the length/mag of the vector is = sqrt(x^2 + y^2,
     for our movement direction this should
     always resualt in 1.41...*/
     float x = oldDir.x;
     float y = oldDir.y;
-    float length = std::sqrt((x*x) + (y*y));
+    float length = std::sqrt((x * x) + (y * y));
     /* the nomralized x and y of the vector are the
     x and y devidied by the length*/
-    normalVec = {x/length, y/length};
-    return normalVec;                              
+    normalVec = {x / length, y / length};
+    return normalVec;
 }
 
-void Player::Move(float speed){
+void Player::Move(float speed)
+{
     getDir();
-    if(curSpeed < speed){
+    if (curSpeed < speed)
+    {
         curSpeed += acc;
-    }else{
+    }
+    else
+    {
         curSpeed = speed;
     }
     playerPos.x += (dir.x * curSpeed);
     playerPos.y += (dir.y * curSpeed);
 }
 
-void Player::getDir(){
-    if(IsKeyDown(KEY_D)){
+void Player::getDir()
+{
+    if (IsKeyDown(KEY_D))
+    {
         dir.x = 1;
     }
-    else if(IsKeyDown(KEY_A)){
+    else if (IsKeyDown(KEY_A))
+    {
         dir.x = -1;
-    } else dir.x = 0;
+    }
+    else
+        dir.x = 0;
 
-    if(IsKeyDown(KEY_W)){
+    if (IsKeyDown(KEY_W))
+    {
         dir.y = -1;
     }
-    else if(IsKeyDown(KEY_S)){
+    else if (IsKeyDown(KEY_S))
+    {
         dir.y = 1;
-    } else dir.y = 0;
-    
-    if (dir.x != 0 and dir.y != 0)
+    }
+    else
+        dir.y = 0;
+
+    if (dir.x != 0 && dir.y != 0)
     {
         dir = Normalize(dir);
     }
-}    
-
-void Player::Draw(){
-    int mul = 0;
-    if(dir.x == 0 and dir.y == -1){
-        mul = 4;
-    } else if(dir.x == 0.707107 and dir.y == -0.707107){
-        mul = 3;
-    } else if(dir.x == 1 and dir.y == 0){
-        mul = 2;
-    } else if(dir.x == 0.707107 and dir.y == 0.707107){
-        mul = 1;
-    } else if(dir.x == 0 and dir.y == 1){
-        mul = 0;
-    } else if(dir.x == -0.707107 and dir.y == 0.707107){
-        mul = 7;
-    } else if(dir.x == -0.707107 and dir.y == 0){
-        mul = 6;
-    } else if(dir.x == -0.707107 and dir.y == -0.707107){
-        mul = 5;
+    if (dir.x != 0 || dir.y != 0)
+    {
+        renderDir = dir;
     }
-    std::cout<<dir.x<<"        "<<dir.y<<std::endl;
+}
 
+void Player::Draw()
+{
+    int mul = 0;
+    if (renderDir.x < -0.05f)
+    {
+        mul = 6;
+    }
+    else if (renderDir.x > 0.05f)
+    {
+        mul = 2;
+    }
+    else if (renderDir.y > 0.05f)
+    {
+        mul = 0;
+    }
+    else if (renderDir.y < -0.05f)
+    {
+        mul = 4;
+    }
 
     Vector2 drawPos = {playerPos.x, playerPos.y - zPos};
-    render={playerPos.x, playerPos.y - zPos, 32, 32};
-    DrawRectangle((int)playerPos.x + 22, (int)playerPos.y + 72,32,4, BLACK);
-    //DrawRectangleRec(render, playerState == BURROWING ? BLACK : ORANGE);
-
-    Rectangle source = (Rectangle){(float)(72*mul), 0.0f, 72.0f, 72.0f};
+    render = {playerPos.x, playerPos.y - zPos, 32, 32};
+    DrawRectangle((int)playerPos.x + 22, (int)playerPos.y + 72, 32, 4, BLACK);
+    // DrawRectangleRec(render, playerState == BURROWING ? BLACK : ORANGE);
+    int row = 0;
+    if (playerState == IDLE)
+    {
+        row = 0;
+    }
+    else if (playerState == WALKING)
+    {
+        row = 2;
+    }
+    Rectangle source = {(float)(72 * mul), (float)(72 * row), 72.0f, 72.0f};
     DrawTextureRec(playerRender, source, drawPos, WHITE);
-}  
+}
 
-void Player::Colliding(){
+void Player::Colliding()
+{
     playerPos.x -= (dir.x * curSpeed);
     playerPos.y -= (dir.y * curSpeed);
 }
 
-void Player::Update(){
-    switch (playerState){
-        case IDLE:
-            if(IsKeyPressed(KEY_J) and grounded){
-                playerState = JUMPING;
-            }
-            else if(IsKeyDown(KEY_A) or IsKeyDown(KEY_D) or IsKeyDown(KEY_W) or IsKeyDown(KEY_S)){
-                playerState = WALKING;
-            }
-            break;
-        case WALKING:
-            Move(walkSpeed);
-            if(IsKeyPressed(KEY_J) and grounded){
-                playerState = JUMPING;
-            }
-            else if(!IsKeyDown(KEY_A) and !IsKeyDown(KEY_D) and !IsKeyDown(KEY_W) and !IsKeyDown(KEY_S)){
-                playerState = IDLE;
-            }
+void Player::Update()
+{
+    switch (playerState)
+    {
+    case IDLE:
+        if (IsKeyPressed(KEY_J) && grounded)
+        {
+            playerState = JUMPING;
+        }
+        else if (IsKeyDown(KEY_A) || IsKeyDown(KEY_D) || IsKeyDown(KEY_W) || IsKeyDown(KEY_S))
+        {
+            playerState = WALKING;
+        }
+        break;
+    case WALKING:
+        Move(walkSpeed);
+        if (IsKeyPressed(KEY_J) && grounded)
+        {
+            playerState = JUMPING;
+        }
+        else if (!IsKeyDown(KEY_A) && !IsKeyDown(KEY_D) && !IsKeyDown(KEY_W) && !IsKeyDown(KEY_S))
+        {
+            playerState = IDLE;
+        }
 
-            break;
-        case BURROWING:
-            if(IsKeyPressed(KEY_J) and grounded){
-                burrowCooldown.Reset();
-                burrowCooldown.Start();
-                playerState = JUMPING;
-            }
-            else if(IsKeyReleased(KEY_J)||burrowTimer.TimeOut()){
-                burrowCooldown.Reset();
-                burrowCooldown.Start();
+        break;
+    case BURROWING:
+        if (IsKeyPressed(KEY_J) && grounded)
+        {
+            burrowCooldown.Reset();
+            burrowCooldown.Start();
+            playerState = JUMPING;
+        }
+        else if (IsKeyReleased(KEY_J) || burrowTimer.TimeOut())
+        {
+            burrowCooldown.Reset();
+            burrowCooldown.Start();
 
-                playerState = IDLE;
-            }
-            Move(burrowSpeed);
-            break;
-        case JUMPING:
-            Move(walkSpeed);
-            if(IsKeyPressed(KEY_J) and !burrowCooldown.running){
-                hangTimer.time = hangTimer.tarTime;
-                playerState = DIVING;
-            }
+            playerState = IDLE;
+        }
+        Move(burrowSpeed);
+        break;
+    case JUMPING:
+        Move(walkSpeed);
+        if (IsKeyPressed(KEY_J) && !burrowCooldown.running)
+        {
+            hangTimer.time = hangTimer.tarTime;
+            playerState = DIVING;
+        }
 
-            if(zPos < 25.0f and !hangTimer.running){
-                zPos += jumpVel * GetFrameTime();
-                if(zPos >= 25.0f){
-                    zPos = 25.0f;
-                    grounded = false;
-                    hangTimer.Start();
-                }
+        if (zPos < 25.0f && !hangTimer.running)
+        {
+            zPos += jumpVel * GetFrameTime();
+            if (zPos >= 25.0f)
+            {
+                zPos = 25.0f;
+                grounded = false;
+                hangTimer.Start();
             }
-            if(hangTimer.TimeOut());
-            if(!grounded and !hangTimer.running){
-                if(!grounded){
-                    zPos -= 10;
-                }
+        }
+        if (hangTimer.TimeOut())
+            ;
+        if (!grounded && !hangTimer.running)
+        {
+            if (!grounded)
+            {
+                zPos -= 10;
             }
+        }
 
-            if(zPos <= 0){
-                zPos = 0;
-                hangTimer.Reset();
-                grounded = true;
-                playerState = IDLE;
-            }
+        if (zPos <= 0)
+        {
+            zPos = 0;
+            hangTimer.Reset();
+            grounded = true;
+            playerState = IDLE;
+        }
 
-            break;
-        case DIVING:
-            if(!grounded and !hangTimer.running){
-                if(!grounded){
-                    zPos -= 10;
-                }
+        break;
+    case DIVING:
+        if (!grounded && !hangTimer.running)
+        {
+            if (!grounded)
+            {
+                zPos -= 10;
             }
-            if(zPos <= 0){
-                zPos = 0;
-                hangTimer.Reset();
-                grounded = true;
-                
-                burrowCooldown.Reset();
-                burrowTimer.Start();
-                playerState = BURROWING; 
-            }
-            break;
+        }
+        if (zPos <= 0)
+        {
+            zPos = 0;
+            hangTimer.Reset();
+            grounded = true;
+
+            burrowCooldown.Reset();
+            burrowTimer.Start();
+            playerState = BURROWING;
+        }
+        break;
     }
-    std::cout<<playerState<<std::endl;
-    
+    std::cout << playerState << std::endl;
+
     burrowTimer.Update();
     burrowCooldown.Update();
     hangTimer.Update();
 
-    if(burrowCooldown.TimeOut()){
+    if (burrowCooldown.TimeOut())
+    {
         burrowTimer.time = 0.0f;
         burrowCooldown.time = 0.0f;
     }
