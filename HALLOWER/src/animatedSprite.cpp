@@ -19,7 +19,7 @@ AnimatedSprite::AnimatedSprite(const std::string SpriteSheet, Vector2 spriteSize
 
 void AnimatedSprite::addAnimation(std::string name, int row, int startFrame, int frames, int fps, bool looping)
 {
-    Animations[name] = animation{name, row, startFrame, frames, fps, looping};
+    Animations[name] = animation{name, row, startFrame, frames, fps, looping, false, false};
     std::cout << Animations.size() << std::endl;
 }
 
@@ -30,8 +30,11 @@ void AnimatedSprite::playAnimation(std::string name)
     {
         if (currentAnimation != name)
         {
+            complete = false;
             currentAnimation = name;
             curFrame = Animations[currentAnimation].startFrame;
+            Animations[currentAnimation].finished = false;
+            Animations[currentAnimation].playing = true;
             frameCount = 0;
         }
     }
@@ -40,18 +43,26 @@ void AnimatedSprite::playAnimation(std::string name)
 void AnimatedSprite::Update()
 {
     frameCount++;
-    bool complete;
     int curfps = Animations[currentAnimation].fps;
-    if (Animations[currentAnimation].looping && complete)
+    if (Animations[currentAnimation].looping || !Animations[currentAnimation].finished)
     {
         if (frameCount >= (60 / curfps))
         {
-            complete = false;
             frameCount = 0;
             curFrame++;
+
             int endFrame = Animations[currentAnimation].startFrame + Animations[currentAnimation].frames;
             if (curFrame >= endFrame)
             {
+                if (Animations[currentAnimation].looping)
+                {
+                    curFrame = Animations[currentAnimation].startFrame;
+                }
+                else
+                {
+                    curFrame = endFrame - 1;
+                    Animations[currentAnimation].finished = true;
+                }
                 curFrame = Animations[currentAnimation].startFrame;
                 complete = true;
             }

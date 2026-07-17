@@ -12,12 +12,10 @@ Player::Player()
     burrowTime = 2.0f; // two seconds
     cooldown = 1.25f;
     curSpeed = 0.0f;
-    burrowed = false;
     acc = 0.1f;
     walkSpeed = 1.5f;
     burrowSpeed = 3.0f;
     topSpeed = 3.0f;
-    walking = false;
     render = {playerPos.x, playerPos.y, 32, 32}; // used to hold what character the player is
     burrowTimer = Timer(burrowTime);
     burrowCooldown = Timer(cooldown);
@@ -25,7 +23,6 @@ Player::Player()
     hangTimer = Timer(hangTime);
     grounded = true;
     jumpVel = 250.0f;
-    jumping = false;
     playerState = IDLE;
     renderDir = DOWN;
     addAnimations();
@@ -41,9 +38,15 @@ void Player::addAnimations()
     playerRender.addAnimation("idle(down)", 0, 0, 1, 1, true);
     playerRender.addAnimation("idle(horizontal)", 0, 1, 1, 1, true);
     playerRender.addAnimation("borrow", 3, 0, 1, 1, true);
-    playerRender.addAnimation("jump(down)", 2, 0, 2, 12, false);
-    playerRender.addAnimation("jump(up)", 2, 10, 2, 12, false);
-    playerRender.addAnimation("jump(horizontal)", 2, 5, 2, 12, false);
+    playerRender.addAnimation("jump(down)", 2, 0, 3, 4, true);
+    playerRender.addAnimation("jump(up)", 2, 10, 3, 4, true);
+    playerRender.addAnimation("jump(horizontal)", 2, 5, 3, 4, true);
+    playerRender.addAnimation("jumpAnticipation(down)", 2, 4, 1, 8, false);
+    playerRender.addAnimation("jumpAnticipation(up)", 2, 14, 1, 8, false);
+    playerRender.addAnimation("jumpAnticipation(horizontal)", 2, 9, 1, 8, false);
+    playerRender.addAnimation("falling(down)", 3, 0, 1, 1, true);
+    playerRender.addAnimation("falling(up)", 2, 10, 1, 1, true);
+    playerRender.addAnimation("falling(horizontal)", 2, 7, 1, 1, true);
     playerRender.addAnimation("dive", 0, 0, 1, 1, true);
 }
 
@@ -154,28 +157,40 @@ void Player::Update()
     switch (playerState)
     {
     case IDLE:
-        if (IsKeyPressed(KEY_J) && grounded)
+        if (animationState != jumpAnticipation)
         {
-            playerState = JUMPING;
-        }
-        else if (IsKeyDown(KEY_A) || IsKeyDown(KEY_D) || IsKeyDown(KEY_W) || IsKeyDown(KEY_S))
-        {
-            playerState = WALKING;
+            if (IsKeyPressed(KEY_J) && grounded)
+            {
+                animationState = jumpAnticipation;
+            }
+            else if (IsKeyDown(KEY_A) || IsKeyDown(KEY_D) || IsKeyDown(KEY_W) || IsKeyDown(KEY_S))
+            {
+                playerState = WALKING;
+            }
+            else
+            {
+                animationState = idle;
+            }
         }
         break;
     case WALKING:
         Move(walkSpeed);
-        if (IsKeyPressed(KEY_J) && grounded)
+        if (animationState != jumpAnticipation)
         {
-            playerState = JUMPING;
-        }
-        else if (!IsKeyDown(KEY_A) && !IsKeyDown(KEY_D) && !IsKeyDown(KEY_W) && !IsKeyDown(KEY_S))
-        {
-            playerState = IDLE;
+            animationState = walking;
+            if (IsKeyPressed(KEY_J) && grounded)
+            {
+                animationState = jumpAnticipation;
+            }
+            else if (!IsKeyDown(KEY_A) && !IsKeyDown(KEY_D) && !IsKeyDown(KEY_W) && !IsKeyDown(KEY_S))
+            {
+                playerState = IDLE;
+            }
         }
 
         break;
     case BURROWING:
+        animationState = burrowing;
         if (IsKeyPressed(KEY_J) && grounded)
         {
             burrowCooldown.Reset();
@@ -201,6 +216,7 @@ void Player::Update()
 
         if (zPos < 25.0f && !hangTimer.running)
         {
+            animationState = jumping;
             zPos += jumpVel * GetFrameTime();
             if (zPos >= 25.0f)
             {
@@ -215,6 +231,7 @@ void Player::Update()
         {
             if (!grounded)
             {
+                animationState = falling;
                 zPos -= 10;
             }
         }
@@ -253,7 +270,12 @@ void Player::Update()
     burrowTimer.Update();
     burrowCooldown.Update();
     hangTimer.Update();
-    playerRender.playAnimation(animationChart[playerState][renderDir]);
+    playerRender.playAnimation(animationChart[animationState][renderDir]);
+
+    if (animationState == jumpAnticipation && playerRender.Animations[animationChart[animationState][renderDir]].finished == true)
+    {
+        playerState = JUMPING;
+    }
 
     if (burrowCooldown.TimeOut())
     {

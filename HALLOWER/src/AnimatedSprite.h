@@ -11,6 +11,7 @@ class AnimatedSprite
 private:
     int curFrame;
     int frameCount;
+    bool complete;
     Rectangle source;
 
 public:
@@ -28,6 +29,8 @@ public:
         int frames;
         int fps;
         bool looping;
+        bool finished;
+        bool playing;
     };
     std::map<std::string, animation> Animations;
     std::string currentAnimation;
