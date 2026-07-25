@@ -15,16 +15,12 @@ Player::Player()
     acc = 0.1f;
     walkSpeed = 1.5f;
     burrowSpeed = 3.0f;
-    topSpeed = 3.0f;
-    render = {playerPos.x, playerPos.y, 32, 32}; // used to hold what character the player is
     burrowTimer = Timer(burrowTime);
     burrowCooldown = Timer(cooldown);
-    hangTime = 0.5f;
+    hangTime = 0.25f;
     hangTimer = Timer(hangTime);
     grounded = true;
     jumpVel = 250.0f;
-    playerState = IDLE;
-    renderDir = DOWN;
     addAnimations();
 }
 
@@ -47,7 +43,7 @@ void Player::addAnimations()
     playerRender.addAnimation("falling(down)", 3, 0, 1, 1, true);
     playerRender.addAnimation("falling(up)", 2, 10, 1, 1, true);
     playerRender.addAnimation("falling(horizontal)", 2, 7, 1, 1, true);
-    playerRender.addAnimation("dive", 0, 0, 1, 1, true);
+    playerRender.addAnimation("dive", 2, 2, 1, 1, false);
 }
 
 // gets two varibes && returns a normalized vector
@@ -113,9 +109,7 @@ void Player::getDir()
             renderDir = DOWN;
         else if (dir.y == -1)
             renderDir = UP;
-        else if (dir.x == 1)
-            renderDir = HORIZONTAL;
-        else if (dir.x == -1)
+        else if (dir.x == 1 or dir.x == -1)
             renderDir = HORIZONTAL;
     }
 
@@ -129,7 +123,6 @@ void Player::getDir()
 void Player::Draw()
 {
     Vector2 drawPos = {playerPos.x, playerPos.y - zPos};
-    render = {playerPos.x, playerPos.y - zPos, 32, 32};
     DrawRectangle(playerPos.x + 6, playerPos.y + 19, 12, 2, DARKGRAY);
 
     playerRender.position = drawPos;
@@ -208,13 +201,14 @@ void Player::Update()
         break;
     case JUMPING:
         Move(walkSpeed);
+        std::cout<< zPos <<std::endl;
         if (IsKeyPressed(KEY_J) && !burrowCooldown.running)
         {
             hangTimer.time = hangTimer.tarTime;
             playerState = DIVING;
         }
 
-        if (zPos < 25.0f && !hangTimer.running)
+        if (zPos < 25.0f && !hangTimer.running && animationState != falling)
         {
             animationState = jumping;
             zPos += jumpVel * GetFrameTime();
@@ -232,7 +226,7 @@ void Player::Update()
             if (!grounded)
             {
                 animationState = falling;
-                zPos -= 10;
+                zPos -= 100.0f * GetFrameTime();
             }
         }
 
@@ -246,6 +240,7 @@ void Player::Update()
 
         break;
     case DIVING:
+        animationState = diving;
         if (!grounded && !hangTimer.running)
         {
             if (!grounded)
