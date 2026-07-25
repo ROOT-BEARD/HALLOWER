@@ -39,7 +39,6 @@ private:
         walking,
         burrowing,
         jumping,
-        jumpAnticipation,
         falling,
         diving
     };
@@ -56,11 +55,10 @@ private:
 
     Vector2 Normalize(const Vector2 &oldDir) const;
 
-    std::string animationChart[7][3] = {{"idle(up)", "idle(down)", "idle(horizontal)"},
+    std::string animationChart[6][3] = {{"idle(up)", "idle(down)", "idle(horizontal)"},
                                         {"walk(up)", "walk(down)", "walk(horizontal)"},
                                         {"burrow", "burrow", "burrow"},
                                         {"jump(up)", "jump(down)", "jump(horizontal)"},
-                                        {"jumpAnticipation(up)", "jumpAnticipation(down)", "jumpAnticipation(horizontal)"},
                                         {"falling(up)", "falling(down)", "falling(horizontal)"},
                                         {
                                             "dive",

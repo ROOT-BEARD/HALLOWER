@@ -6,6 +6,9 @@
 
 Player::Player()
 {
+    animationState = idle;
+    renderDir = DOWN;
+    playerState = IDLE;
     playerRender = AnimatedSprite("Art/playerSheet.png", Vector2{24, 24});
     dir = Vector2{0.0f, 0.0f};
     zPos = 0;
@@ -21,7 +24,7 @@ Player::Player()
     hangTime = 0.25f;
     hangTimer = Timer(hangTime);
     grounded = true;
-    jumpVel = 250.0f;
+    jumpVel = 200.0f;
     addAnimations();
 }
 
@@ -38,9 +41,6 @@ void Player::addAnimations()
     playerRender.addAnimation("jump(down)", 2, 0, 3, 4, true);
     playerRender.addAnimation("jump(up)", 2, 10, 3, 4, true);
     playerRender.addAnimation("jump(horizontal)", 2, 5, 3, 4, true);
-    playerRender.addAnimation("jumpAnticipation(down)", 2, 4, 1, 8, false);
-    playerRender.addAnimation("jumpAnticipation(up)", 2, 14, 1, 8, false);
-    playerRender.addAnimation("jumpAnticipation(horizontal)", 2, 9, 1, 8, false);
     playerRender.addAnimation("falling(down)", 3, 0, 1, 1, true);
     playerRender.addAnimation("falling(up)", 2, 10, 1, 1, true);
     playerRender.addAnimation("falling(horizontal)", 2, 7, 1, 1, true);
@@ -151,37 +151,27 @@ void Player::Update()
     switch (playerState)
     {
     case IDLE:
-        if (animationState != jumpAnticipation)
+        animationState = idle;
+        if (IsKeyPressed(KEY_J) && grounded)
         {
-            if (IsKeyPressed(KEY_J) && grounded)
-            {
-                animationState = jumpAnticipation;
-            }
-            else if (IsKeyDown(KEY_A) || IsKeyDown(KEY_D) || IsKeyDown(KEY_W) || IsKeyDown(KEY_S))
-            {
-                playerState = WALKING;
-            }
-            else
-            {
-                animationState = idle;
-            }
+            playerState = JUMPING;
+        }
+        else if (IsKeyDown(KEY_A) || IsKeyDown(KEY_D) || IsKeyDown(KEY_W) || IsKeyDown(KEY_S))
+        {
+            playerState = WALKING;
         }
         break;
     case WALKING:
         Move(walkSpeed);
-        if (animationState != jumpAnticipation)
+        animationState = walking;
+        if (IsKeyPressed(KEY_J) && grounded)
         {
-            animationState = walking;
-            if (IsKeyPressed(KEY_J) && grounded)
-            {
-                animationState = jumpAnticipation;
-            }
-            else if (!IsKeyDown(KEY_A) && !IsKeyDown(KEY_D) && !IsKeyDown(KEY_W) && !IsKeyDown(KEY_S))
-            {
-                playerState = IDLE;
-            }
+            playerState = JUMPING;
         }
-
+        else if (!IsKeyDown(KEY_A) && !IsKeyDown(KEY_D) && !IsKeyDown(KEY_W) && !IsKeyDown(KEY_S))
+        {
+            playerState = IDLE;
+        }
         break;
     case BURROWING:
         animationState = burrowing;
@@ -209,13 +199,13 @@ void Player::Update()
             playerState = DIVING;
         }
 
-        if (zPos < 25.0f && !hangTimer.running && animationState != falling)
+        if (zPos < 16.0f && !hangTimer.running && animationState != falling)
         {
             animationState = jumping;
             zPos += jumpVel * GetFrameTime();
-            if (zPos >= 25.0f)
+            if (zPos >= 16.0f)
             {
-                zPos = 25.0f;
+                zPos = 16.0f;
                 grounded = false;
                 hangTimer.Start();
             }
@@ -267,11 +257,6 @@ void Player::Update()
     burrowCooldown.Update();
     hangTimer.Update();
     playerRender.playAnimation(animationChart[animationState][renderDir]);
-
-    if (animationState == jumpAnticipation && playerRender.Animations[animationChart[animationState][renderDir]].finished == true)
-    {
-        playerState = JUMPING;
-    }
 
     if (burrowCooldown.TimeOut())
     {
