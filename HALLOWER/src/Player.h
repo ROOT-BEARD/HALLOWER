@@ -4,12 +4,13 @@
 #include "raylib.h"
 #include "Timer.h"
 #include "AnimatedSprite.h"
+#include <string>
 
 class Player
 {
 private:
     void addAnimations();
-    AnimatedSprite playerRender = AnimatedSprite("Art/playerSheet.png", Vector2{24, 24});
+    AnimatedSprite playerRender;
     Vector2 dir;
     float zPos;
     float acc;
@@ -24,15 +25,15 @@ private:
     Timer hangTimer;
     bool grounded;
     float jumpVel;
-    typedef enum
+    enum PLAYERSTATE
     {
         IDLE,
         WALKING,
         BURROWING,
         JUMPING,
         DIVING
-    } PLAYERSTATE;
-    typedef enum
+    };
+    enum ANIMATIONSTATE
     {
         idle,
         walking,
@@ -41,26 +42,26 @@ private:
         jumpAnticipation,
         falling,
         diving
-    } AMIMATIONSTATE;
-    typedef enum
+    };
+    enum RENDERDIR
     {
         UP,
         DOWN,
         HORIZONTAL
-    } RENDERDIR;
+    };
 
-    AMIMATIONSTATE animationState;
+    ANIMATIONSTATE animationState;
     RENDERDIR renderDir;
     PLAYERSTATE playerState;
 
-    Vector2 Normalize(Vector2 oldDir);
+    Vector2 Normalize(const Vector2 &oldDir) const;
 
     std::string animationChart[7][3] = {{"idle(up)", "idle(down)", "idle(horizontal)"},
                                         {"walk(up)", "walk(down)", "walk(horizontal)"},
-                                        {"borrow", "borrow", "borrow"},
+                                        {"burrow", "burrow", "burrow"},
                                         {"jump(up)", "jump(down)", "jump(horizontal)"},
                                         {"jumpAnticipation(up)", "jumpAnticipation(down)", "jumpAnticipation(horizontal)"},
-                                        {"falling(up)", "fallng(down)", "falling(horizaontal)"},
+                                        {"falling(up)", "falling(down)", "falling(horizontal)"},
                                         {
                                             "dive",
                                             "dive",

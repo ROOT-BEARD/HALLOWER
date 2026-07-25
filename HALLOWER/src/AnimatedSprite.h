@@ -37,6 +37,7 @@ public:
     void addAnimation(std::string name, int row, int startFrame, int frames, int fps, bool looping);
     void playAnimation(std::string name);
     void Update();
+    AnimatedSprite();
     AnimatedSprite(const std::string SpriteSheet, Vector2 spriteSize);
 };
 

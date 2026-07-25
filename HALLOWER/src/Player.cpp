@@ -6,6 +6,7 @@
 
 Player::Player()
 {
+    playerRender = AnimatedSprite("Art/playerSheet.png", Vector2{24, 24});
     dir = Vector2{0.0f, 0.0f};
     zPos = 0;
     playerPos = Vector2{32.0f, 32.0f};
@@ -33,7 +34,7 @@ void Player::addAnimations()
     playerRender.addAnimation("idle(up)", 0, 2, 1, 1, true);
     playerRender.addAnimation("idle(down)", 0, 0, 1, 1, true);
     playerRender.addAnimation("idle(horizontal)", 0, 1, 1, 1, true);
-    playerRender.addAnimation("borrow", 3, 0, 1, 1, true);
+    playerRender.addAnimation("burrow", 3, 0, 1, 1, true);
     playerRender.addAnimation("jump(down)", 2, 0, 3, 4, true);
     playerRender.addAnimation("jump(up)", 2, 10, 3, 4, true);
     playerRender.addAnimation("jump(horizontal)", 2, 5, 3, 4, true);
@@ -47,7 +48,7 @@ void Player::addAnimations()
 }
 
 // gets two varibes && returns a normalized vector
-Vector2 Player::Normalize(Vector2 oldDir)
+Vector2 Player::Normalize(const Vector2 &oldDir) const
 {
     Vector2 normalVec;
     /*the length/mag of the vector is = sqrt(x^2 + y^2,
@@ -201,7 +202,7 @@ void Player::Update()
         break;
     case JUMPING:
         Move(walkSpeed);
-        std::cout<< zPos <<std::endl;
+        std::cout << zPos << std::endl;
         if (IsKeyPressed(KEY_J) && !burrowCooldown.running)
         {
             hangTimer.time = hangTimer.tarTime;

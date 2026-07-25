@@ -5,7 +5,11 @@
 #include "iostream"
 #include "string"
 
-AnimatedSprite::AnimatedSprite(const std::string SpriteSheet, Vector2 spriteSize)
+AnimatedSprite::AnimatedSprite()
+{
+}
+
+AnimatedSprite::AnimatedSprite(std::string SpriteSheet, Vector2 spriteSize)
 {
     this->SpriteSheet = LoadTexture(SpriteSheet.c_str());
     SheetHeight = this->SpriteSheet.height;
