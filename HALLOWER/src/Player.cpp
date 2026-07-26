@@ -13,18 +13,11 @@ Player::Player()
     dir = Vector2{0.0f, 0.0f};
     zPos = 0;
     playerPos = Vector2{32.0f, 32.0f};
-    burrowTime = 2.0f; // two seconds
-    cooldown = 1.25f;
     curSpeed = 0.0f;
-    acc = 0.1f;
-    walkSpeed = 1.5f;
-    burrowSpeed = 3.0f;
-    burrowTimer = Timer(burrowTime);
-    burrowCooldown = Timer(cooldown);
-    hangTime = 0.25f;
-    hangTimer = Timer(hangTime);
+    burrowTimer = Timer(stats.burrowTime);
+    burrowCooldown = Timer(stats.cooldown);
+    hangTimer = Timer(stats.hangTime);
     grounded = true;
-    jumpVel = 200.0f;
     addAnimations();
 }
 
@@ -68,7 +61,7 @@ void Player::Move(float speed)
     getDir();
     if (curSpeed < speed)
     {
-        curSpeed += acc;
+        curSpeed += stats.acc;
     }
     else
     {
@@ -162,7 +155,7 @@ void Player::Update()
         }
         break;
     case WALKING:
-        Move(walkSpeed);
+        Move(stats.walkSpeed);
         animationState = walking;
         if (IsKeyPressed(KEY_J) && grounded)
         {
@@ -188,10 +181,10 @@ void Player::Update()
 
             playerState = IDLE;
         }
-        Move(burrowSpeed);
+        Move(stats.burrowSpeed);
         break;
     case JUMPING:
-        Move(walkSpeed);
+        Move(stats.walkSpeed);
         std::cout << zPos << std::endl;
         if (IsKeyPressed(KEY_J) && !burrowCooldown.running)
         {
@@ -202,7 +195,7 @@ void Player::Update()
         if (zPos < 16.0f && !hangTimer.running && animationState != falling)
         {
             animationState = jumping;
-            zPos += jumpVel * GetFrameTime();
+            zPos += stats.jumpVel * GetFrameTime();
             if (zPos >= 16.0f)
             {
                 zPos = 16.0f;
@@ -217,7 +210,7 @@ void Player::Update()
             if (!grounded)
             {
                 animationState = falling;
-                zPos -= 100.0f * GetFrameTime();
+                zPos -= stats.gravity * GetFrameTime();
             }
         }
 

@@ -9,22 +9,29 @@
 class Player
 {
 private:
+    struct playerStats
+    {
+        float acc = 0.1f;
+        float burrowTime = 2.0f;
+        float burrowSpeed = 3.0f;
+        float walkSpeed = 1.5f;
+        float cooldown = 1.25f;
+        float jumpVel = 200.0f;
+        float gravity = 150.0f;
+        float hangTime = 0.25f;
+    };
+    playerStats stats;
+
+    float curSpeed;
     void addAnimations();
     AnimatedSprite playerRender;
     Vector2 dir;
     float zPos;
-    float acc;
-    float topSpeed;
-    float burrowTime;
-    float burrowSpeed;
-    float walkSpeed;
-    float cooldown;
     Timer burrowTimer;
     Timer burrowCooldown;
     float hangTime;
     Timer hangTimer;
     bool grounded;
-    float jumpVel;
     enum PLAYERSTATE
     {
         IDLE,
@@ -35,7 +42,7 @@ private:
     };
     enum ANIMATIONSTATE
     {
-        idle,
+        idle = 0,
         walking,
         burrowing,
         jumping,
@@ -67,7 +74,6 @@ private:
                                         }};
 
 public:
-    float curSpeed;
     Rectangle render;
     Vector2 playerPos;
     Player();
