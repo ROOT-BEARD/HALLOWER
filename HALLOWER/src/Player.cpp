@@ -74,6 +74,7 @@ void Player::Move(float speed)
         // other wise cap the curSpeed to the passed in top speed
         curSpeed = speed;
     }
+    // move the play x and y postions by curSpeed * deltas
     playerPos.x += (dir.x * curSpeed * delta);
     playerPos.y += (dir.y * curSpeed * delta);
 }
@@ -178,7 +179,7 @@ void Player::Update()
     case BURROWING:
         animationState = burrowing;
         Move(stats.burrowSpeed);
-        if (IsKeyReleased(KEY_J) || burrowTimer.TimeOut())
+        if (!IsKeyDown(KEY_J) || burrowTimer.TimeOut())
         {
             burrowJump = true;
             playerState = JUMPING;
