@@ -34,7 +34,7 @@ void Player::addAnimations()
     playerRender.addAnimation("jump(down)", 2, 0, 3, 4, true);
     playerRender.addAnimation("jump(up)", 2, 10, 3, 4, true);
     playerRender.addAnimation("jump(horizontal)", 2, 5, 3, 4, true);
-    playerRender.addAnimation("falling(down)", 3, 0, 1, 1, true);
+    playerRender.addAnimation("falling(down)", 2, 0, 1, 1, true);
     playerRender.addAnimation("falling(up)", 2, 10, 1, 1, true);
     playerRender.addAnimation("falling(horizontal)", 2, 7, 1, 1, true);
     playerRender.addAnimation("dive", 2, 2, 1, 1, false);
@@ -58,17 +58,18 @@ Vector2 Player::Normalize(const Vector2 &oldDir) const
 
 void Player::Move(float speed)
 {
+    float delta = GetFrameTime();
     getDir();
     if (curSpeed < speed)
     {
-        curSpeed += stats.acc;
+        curSpeed += stats.acc * delta;
     }
     else
     {
         curSpeed = speed;
     }
-    playerPos.x += (dir.x * curSpeed);
-    playerPos.y += (dir.y * curSpeed);
+    playerPos.x += (dir.x * curSpeed * delta);
+    playerPos.y += (dir.y * curSpeed * delta);
 }
 
 void Player::getDir()
@@ -153,6 +154,8 @@ void Player::Update()
         {
             playerState = WALKING;
         }
+        else
+            curSpeed = 0.0f;
         break;
     case WALKING:
         Move(stats.walkSpeed);

@@ -11,10 +11,10 @@ class Player
 private:
     struct playerStats
     {
-        float acc = 0.1f;
+        float acc = 300.0f;
         float burrowTime = 2.0f;
-        float burrowSpeed = 3.0f;
-        float walkSpeed = 1.5f;
+        float burrowSpeed = 200.0f;
+        float walkSpeed = 100.0f;
         float cooldown = 1.25f;
         float jumpVel = 200.0f;
         float gravity = 150.0f;
