@@ -15,9 +15,11 @@ Player::Player()
     playerPos = Vector2{32.0f, 32.0f};
     curSpeed = 0.0f;
     burrowTimer = Timer(stats.burrowTime);
-    burrowCooldown = Timer(stats.cooldown);
     hangTimer = Timer(stats.hangTime);
     grounded = true;
+    burrowJump = false;
+    //used mostly in place of a landing animation
+    groundedTimer = Timer(0.05f);
     addAnimations();
 }
 
@@ -58,14 +60,18 @@ Vector2 Player::Normalize(const Vector2 &oldDir) const
 
 void Player::Move(float speed)
 {
+    // gets the currentFrame time
     float delta = GetFrameTime();
+    // gets the current directon inputs
     getDir();
+    //if the curspeed is less than the top speed, increase it by the accleration * delta
     if (curSpeed < speed)
     {
         curSpeed += stats.acc * delta;
     }
     else
     {
+        // other wise cap the curSpeed to the passed in top speed
         curSpeed = speed;
     }
     playerPos.x += (dir.x * curSpeed * delta);
@@ -118,7 +124,7 @@ void Player::getDir()
 void Player::Draw()
 {
     Vector2 drawPos = {playerPos.x, playerPos.y - zPos};
-    DrawRectangle(playerPos.x + 6, playerPos.y + 19, 12, 2, DARKGRAY);
+    DrawRectangle(playerPos.x + 6, playerPos.y + 19, 12, 2, BLACK);
 
     playerRender.position = drawPos;
     playerRender.Update();
@@ -171,94 +177,78 @@ void Player::Update()
         break;
     case BURROWING:
         animationState = burrowing;
-        if (IsKeyPressed(KEY_J) && grounded)
+        Move(stats.burrowSpeed);
+        if (IsKeyReleased(KEY_J) || burrowTimer.TimeOut())
         {
-            burrowCooldown.Reset();
-            burrowCooldown.Start();
+            burrowJump = true;
             playerState = JUMPING;
         }
-        else if (IsKeyReleased(KEY_J) || burrowTimer.TimeOut())
-        {
-            burrowCooldown.Reset();
-            burrowCooldown.Start();
-
-            playerState = IDLE;
-        }
-        Move(stats.burrowSpeed);
         break;
     case JUMPING:
-        Move(stats.walkSpeed);
-        std::cout << zPos << std::endl;
-        if (IsKeyPressed(KEY_J) && !burrowCooldown.running)
+        if (burrowJump) Move(stats.walkSpeed * 2);
+        else Move(stats.walkSpeed);
+        if (IsKeyPressed(KEY_J) && !burrowJump)
         {
-            hangTimer.time = hangTimer.tarTime;
             playerState = DIVING;
+            break;
         }
 
-        if (zPos < 16.0f && !hangTimer.running && animationState != falling)
+        if (zPos < stats.jumpHeight && animationState != falling)
         {
             animationState = jumping;
             zPos += stats.jumpVel * GetFrameTime();
-            if (zPos >= 16.0f)
+            if (zPos >= stats.jumpHeight)
             {
-                zPos = 16.0f;
+                zPos = stats.jumpHeight;
                 grounded = false;
                 hangTimer.Start();
             }
         }
-        if (hangTimer.TimeOut())
-            ;
-        if (!grounded && !hangTimer.running)
+
+        if (!grounded && hangTimer.TimeOut())
         {
-            if (!grounded)
-            {
-                animationState = falling;
-                zPos -= stats.gravity * GetFrameTime();
-            }
+            animationState = falling;
+            zPos -= stats.gravity * GetFrameTime();
         }
 
         if (zPos <= 0)
         {
             zPos = 0;
             hangTimer.Reset();
-            grounded = true;
+            groundedTimer.Start();
             playerState = IDLE;
+            burrowJump = false;
         }
 
         break;
     case DIVING:
         animationState = diving;
-        if (!grounded && !hangTimer.running)
-        {
-            if (!grounded)
-            {
-                zPos -= 10;
-            }
-        }
+        Move(stats.walkSpeed * 1.5);    
+
+        zPos -= 200.0 * GetFrameTime();
+
         if (zPos <= 0)
         {
             zPos = 0;
             hangTimer.Reset();
-            grounded = true;
 
-            burrowCooldown.Reset();
             burrowTimer.Start();
             playerState = BURROWING;
         }
         break;
     }
-    std::cout << playerState << std::endl;
 
     burrowTimer.Update();
-    burrowCooldown.Update();
     hangTimer.Update();
+    groundedTimer.Update();
+
     playerRender.playAnimation(animationChart[animationState][renderDir]);
 
-    if (burrowCooldown.TimeOut())
-    {
-        burrowTimer.time = 0.0f;
-        burrowCooldown.time = 0.0f;
+    if(groundedTimer.TimeOut()){
+        grounded = true;
+        groundedTimer.Reset();
     }
+    std::cout<<groundedTimer.time<<std::endl;
 
     Draw();
 }

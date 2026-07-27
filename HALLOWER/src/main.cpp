@@ -18,7 +18,9 @@ int main()
 
     Player player;
 
-    Rectangle wall = {320, 320, 64, 64};
+    Rectangle wall = {windowSize.x/2, windowSize.y/2, 16, 16};
+    Rectangle wall2 = {windowSize.x/2 + 16, windowSize.y/2, 16, 16};
+
 
     while (!WindowShouldClose())
     {
@@ -32,7 +34,8 @@ int main()
         BeginTextureMode(gameRender);
 
         ClearBackground(BLUE);
-        DrawRectangleRec(wall, GRAY);
+        DrawRectangleRec(wall, GREEN);
+        DrawRectangleRec(wall2, RED);
         player.Update();
 
         EndTextureMode();

@@ -13,10 +13,12 @@ Timer::Timer(float tarTime)
 {
     time = 0.0f;
     this->tarTime = tarTime;
+    running = false;
 }
 
 void Timer::Start()
 {
+    time = 0.0f;
     running = true;
 }
 
@@ -28,18 +30,13 @@ void Timer::Reset()
 
 bool Timer::TimeOut()
 {
-    bool complete = false;
-    if (time >= tarTime)
-    {
-        complete = true;
-        time = 0.0;
-        running = false;
-    }
-    return complete;
+    if(!running) return false;
+    return time >= tarTime;
 }
 
 void Timer::Update()
 {
     if (running)
         time += GetFrameTime();
+        if(time >= tarTime) time = tarTime;
 }

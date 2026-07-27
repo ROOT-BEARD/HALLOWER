@@ -13,15 +13,16 @@ private:
     {
         float acc = 300.0f;
         float burrowTime = 2.0f;
-        float burrowSpeed = 200.0f;
-        float walkSpeed = 100.0f;
+        float burrowSpeed = 100.0f;
+        float walkSpeed = 50.0f;
         float cooldown = 1.25f;
         float jumpVel = 200.0f;
         float gravity = 150.0f;
-        float hangTime = 0.25f;
+        float hangTime = 0.35f;
+        float jumpHeight = 12.0f;
     };
     playerStats stats;
-
+    bool burrowJump = false;
     float curSpeed;
     void addAnimations();
     AnimatedSprite playerRender;
@@ -31,6 +32,7 @@ private:
     Timer burrowCooldown;
     float hangTime;
     Timer hangTimer;
+    Timer groundedTimer;
     bool grounded;
     enum PLAYERSTATE
     {
