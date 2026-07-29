@@ -18,27 +18,35 @@ Player::Player()
     hangTimer = Timer(stats.hangTime);
     grounded = true;
     burrowJump = false;
-    //used mostly in place of a landing animation
+    // used mostly in place of a landing animation
     groundedTimer = Timer(0.05f);
     addAnimations();
 }
 
+// adds all the animations that the player will use
 void Player::addAnimations()
 {
+    // *TEST ANIMATION*
     playerRender.addAnimation("spin", 0, 0, 4, 4, true);
+    // walking
     playerRender.addAnimation("walk(up)", 1, 8, 4, 4, true);
     playerRender.addAnimation("walk(down)", 1, 0, 4, 4, true);
     playerRender.addAnimation("walk(horizontal)", 1, 4, 4, 4, true);
+    // idle
     playerRender.addAnimation("idle(up)", 0, 2, 1, 1, true);
     playerRender.addAnimation("idle(down)", 0, 0, 1, 1, true);
     playerRender.addAnimation("idle(horizontal)", 0, 1, 1, 1, true);
+    // burrowing
     playerRender.addAnimation("burrow", 3, 0, 1, 1, true);
+    // jumping
     playerRender.addAnimation("jump(down)", 2, 0, 3, 4, true);
     playerRender.addAnimation("jump(up)", 2, 10, 3, 4, true);
     playerRender.addAnimation("jump(horizontal)", 2, 5, 3, 4, true);
+    // falling
     playerRender.addAnimation("falling(down)", 2, 0, 1, 1, true);
     playerRender.addAnimation("falling(up)", 2, 10, 1, 1, true);
     playerRender.addAnimation("falling(horizontal)", 2, 7, 1, 1, true);
+    // dive
     playerRender.addAnimation("dive", 2, 2, 1, 1, false);
 }
 
@@ -58,13 +66,14 @@ Vector2 Player::Normalize(const Vector2 &oldDir) const
     return normalVec;
 }
 
+// move the player with the top speed passed in as "speed"
 void Player::Move(float speed)
 {
     // gets the currentFrame time
     float delta = GetFrameTime();
     // gets the current directon inputs
     getDir();
-    //if the curspeed is less than the top speed, increase it by the accleration * delta
+    // if the curspeed is less than the top speed, increase it by the accleration * delta
     if (curSpeed < speed)
     {
         curSpeed += stats.acc * delta;
@@ -79,8 +88,10 @@ void Player::Move(float speed)
     playerPos.y += (dir.y * curSpeed * delta);
 }
 
+// gets the direction based on the inputs being pressed
 void Player::getDir()
 {
+    // gets x direction depending on the key pressed
     if (IsKeyDown(KEY_D))
     {
         dir.x = 1;
@@ -89,11 +100,14 @@ void Player::getDir()
     else if (IsKeyDown(KEY_A))
     {
         dir.x = -1;
+        // if moving left, the render is flipped
         playerRender.flipped = true;
     }
     else
         dir.x = 0;
 
+    /* gets the y direction depedning on the key pressed,
+    NOTE: up direction is negative and down is positive*/
     if (IsKeyDown(KEY_W))
     {
         dir.y = -1;
@@ -105,6 +119,8 @@ void Player::getDir()
     else
         dir.y = 0;
 
+    /*only changes the render direction if not IDLE, so that
+    way when idle you stay facing the last moving direction*/
     if (playerState != IDLE)
     {
         if (dir.y == 1)
@@ -122,42 +138,45 @@ void Player::getDir()
     }
 }
 
+// draw the player to the screen
 void Player::Draw()
 {
+    /*where the player will be drawn to, the y position is subtracted
+    by the zPos to allow player to jump*/
     Vector2 drawPos = {playerPos.x, playerPos.y - zPos};
+    // the rectangle being used in place of a shadow sprite
     DrawRectangle(playerPos.x + 6, playerPos.y + 19, 12, 2, BLACK);
-
+    // make the playerRender position = to the new drawPos
     playerRender.position = drawPos;
+    // update the playerRender for animations
     playerRender.Update();
-
-    int row = 0;
-    if (playerState == IDLE)
-    {
-        row = 0;
-    }
-    else if (playerState == WALKING)
-    {
-        row = 2;
-    }
 }
 
+/*call when player is colliding, push the player
+in the oppisite direction that they are moving*/
 void Player::Colliding()
 {
     playerPos.x -= (dir.x * curSpeed);
     playerPos.y -= (dir.y * curSpeed);
 }
 
+void Player::Jump()
+{
+    if (IsKeyPressed(KEY_J) && grounded)
+    {
+        playerState = JUMPING;
+    }
+}
+
 void Player::Update()
 {
+    // switch statement for players action state
     switch (playerState)
     {
     case IDLE:
         animationState = idle;
-        if (IsKeyPressed(KEY_J) && grounded)
-        {
-            playerState = JUMPING;
-        }
-        else if (IsKeyDown(KEY_A) || IsKeyDown(KEY_D) || IsKeyDown(KEY_W) || IsKeyDown(KEY_S))
+        Jump();
+        if (IsKeyDown(KEY_A) || IsKeyDown(KEY_D) || IsKeyDown(KEY_W) || IsKeyDown(KEY_S))
         {
             playerState = WALKING;
         }
@@ -167,11 +186,8 @@ void Player::Update()
     case WALKING:
         Move(stats.walkSpeed);
         animationState = walking;
-        if (IsKeyPressed(KEY_J) && grounded)
-        {
-            playerState = JUMPING;
-        }
-        else if (!IsKeyDown(KEY_A) && !IsKeyDown(KEY_D) && !IsKeyDown(KEY_W) && !IsKeyDown(KEY_S))
+        Jump();
+        if (!IsKeyDown(KEY_A) && !IsKeyDown(KEY_D) && !IsKeyDown(KEY_W) && !IsKeyDown(KEY_S))
         {
             playerState = IDLE;
         }
@@ -186,8 +202,10 @@ void Player::Update()
         }
         break;
     case JUMPING:
-        if (burrowJump) Move(stats.walkSpeed * 2);
-        else Move(stats.walkSpeed);
+        if (burrowJump)
+            Move(stats.walkSpeed * 2);
+        else
+            Move(stats.walkSpeed);
         if (IsKeyPressed(KEY_J) && !burrowJump)
         {
             playerState = DIVING;
@@ -224,7 +242,7 @@ void Player::Update()
         break;
     case DIVING:
         animationState = diving;
-        Move(stats.walkSpeed * 1.5);    
+        Move(stats.walkSpeed * 1.5);
 
         zPos -= 200.0 * GetFrameTime();
 
@@ -245,11 +263,12 @@ void Player::Update()
 
     playerRender.playAnimation(animationChart[animationState][renderDir]);
 
-    if(groundedTimer.TimeOut()){
+    if (groundedTimer.TimeOut())
+    {
         grounded = true;
         groundedTimer.Reset();
     }
-    std::cout<<groundedTimer.time<<std::endl;
+    std::cout << groundedTimer.time << std::endl;
 
     Draw();
 }

@@ -9,6 +9,11 @@
 class Player
 {
 private:
+    void getDir();
+    void Move(float speed);
+    void Jump();
+    Vector2 Normalize(const Vector2 &oldDir) const;
+
     struct playerStats
     {
         float acc = 300.0f;
@@ -62,8 +67,6 @@ private:
     RENDERDIR renderDir;
     PLAYERSTATE playerState;
 
-    Vector2 Normalize(const Vector2 &oldDir) const;
-
     std::string animationChart[6][3] = {{"idle(up)", "idle(down)", "idle(horizontal)"},
                                         {"walk(up)", "walk(down)", "walk(horizontal)"},
                                         {"burrow", "burrow", "burrow"},
@@ -79,8 +82,6 @@ public:
     Rectangle render;
     Vector2 playerPos;
     Player();
-    void getDir();
-    void Move(float speed);
     void Draw();
     void Update();
     void Colliding();
