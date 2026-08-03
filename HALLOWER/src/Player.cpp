@@ -20,6 +20,9 @@ Player::Player()
     burrowJump = false;
     // used mostly in place of a landing animation
     groundedTimer = Timer(0.05f);
+    bufferAmount = 0.1;
+    jumpBuffer = Timer(bufferAmount);
+
     addAnimations();
 }
 
@@ -162,8 +165,10 @@ void Player::Colliding()
 
 void Player::Jump()
 {
+    // chceck to see if jump key is pressed and grounded
     if (IsKeyPressed(KEY_J) && grounded)
     {
+        // if so move to the JUMPING state
         playerState = JUMPING;
     }
 }
@@ -211,6 +216,10 @@ void Player::Update()
             playerState = DIVING;
             break;
         }
+        else if (IsKeyPressed(KEY_J))
+        {
+            jumpBuffer.Start();
+        }
 
         if (zPos < stats.jumpHeight && animationState != falling)
         {
@@ -235,8 +244,17 @@ void Player::Update()
             zPos = 0;
             hangTimer.Reset();
             groundedTimer.Start();
-            playerState = IDLE;
             burrowJump = false;
+            if (jumpBuffer.running && !jumpBuffer.TimeOut())
+            {
+                jumpBuffer.Reset();
+                animationState = jumping;
+                zPos += stats.jumpVel * GetFrameTime();
+            }
+            else
+            {
+                playerState = IDLE;
+            }
         }
 
         break;
@@ -260,6 +278,7 @@ void Player::Update()
     burrowTimer.Update();
     hangTimer.Update();
     groundedTimer.Update();
+    jumpBuffer.Update();
 
     playerRender.playAnimation(animationChart[animationState][renderDir]);
 
@@ -268,7 +287,4 @@ void Player::Update()
         grounded = true;
         groundedTimer.Reset();
     }
-    std::cout << groundedTimer.time << std::endl;
-
-    Draw();
 }

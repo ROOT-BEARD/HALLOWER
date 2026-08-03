@@ -38,6 +38,8 @@ private:
     float hangTime;
     Timer hangTimer;
     Timer groundedTimer;
+    Timer jumpBuffer;
+    float bufferAmount;
     bool grounded;
     enum PLAYERSTATE
     {
