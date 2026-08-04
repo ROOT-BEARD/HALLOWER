@@ -5,6 +5,7 @@
 #include "Timer.h"
 #include "AnimatedSprite.h"
 #include <string>
+#include "vector"
 
 class Player
 {
@@ -87,6 +88,7 @@ private:
 public:
     Rectangle collision;
     Vector2 playerPos;
+    std::vector<Rectangle> level;
     Player();
     void Draw();
     void Update();

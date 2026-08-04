@@ -3,6 +3,7 @@
 #include "cmath"
 #include "player.h"
 #include "AnimatedSprite.h"
+#include "vector"
 
 int main()
 {
@@ -20,6 +21,9 @@ int main()
 
     Rectangle wall = {windowSize.x / 2, windowSize.y / 2, 16, 16};
     Rectangle wall2 = {windowSize.x / 2 + 16, windowSize.y / 2, 16, 16};
+
+    player.level.push_back(wall);
+    player.level.push_back(wall2);
 
     while (!WindowShouldClose())
     {
