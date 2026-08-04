@@ -25,7 +25,7 @@ int main()
     {
         float delta = GetFrameTime();
 
-        if (CheckCollisionRecs(player.render, wall))
+        if (CheckCollisionRecs(player.collision, wall))
         {
             player.Colliding();
         }

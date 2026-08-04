@@ -158,14 +158,24 @@ void Player::Draw()
     playerRender.position = drawPos;
     // update the playerRender for animations
     playerRender.Update();
+
+    if (playerState == JUMPING)
+    {
+        collision = {0, 0, 0, 0};
+    }
+    else
+    {
+        collision = {drawPos.x + 9, drawPos.y + 14, 6, 6};
+        DrawRectangleRec(collision, ColorAlpha(RED, 0.5f));
+    }
 }
 
 /*call when player is colliding, push the player
 in the oppisite direction that they are moving*/
 void Player::Colliding()
 {
-    playerPos.x -= (dir.x * curSpeed);
-    playerPos.y -= (dir.y * curSpeed);
+    playerPos.x -= (dir.x * curSpeed) * GetFrameTime();
+    playerPos.y -= (dir.y * curSpeed) * GetFrameTime();
 }
 
 void Player::Jump()
@@ -299,13 +309,16 @@ void Player::Update()
         break;
     }
 
+    // updating timers
     burrowTimer.Update();
     hangTimer.Update();
     groundedTimer.Update();
     jumpBuffer.Update();
 
+    // play the current animation based off animation state and the current directon
     playerRender.playAnimation(animationChart[animationState][renderDir]);
 
+    // makes the player grounded once timed out
     if (groundedTimer.TimeOut())
     {
         grounded = true;

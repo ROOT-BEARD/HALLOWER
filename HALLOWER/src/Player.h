@@ -85,7 +85,7 @@ private:
                                         {"attack(up)", "attack(down)", "attack(horizontal)"}};
 
 public:
-    Rectangle render;
+    Rectangle collision;
     Vector2 playerPos;
     Player();
     void Draw();
