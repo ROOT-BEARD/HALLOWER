@@ -12,6 +12,7 @@ private:
     void getDir();
     void Move(float speed);
     void Jump();
+    void Attack();
     Vector2 Normalize(const Vector2 &oldDir) const;
 
     struct playerStats
@@ -47,7 +48,8 @@ private:
         WALKING,
         BURROWING,
         JUMPING,
-        DIVING
+        DIVING,
+        ATTACKING
     };
     enum ANIMATIONSTATE
     {
@@ -56,7 +58,8 @@ private:
         burrowing,
         jumping,
         falling,
-        diving
+        diving,
+        attacking
     };
     enum RENDERDIR
     {
@@ -69,7 +72,7 @@ private:
     RENDERDIR renderDir;
     PLAYERSTATE playerState;
 
-    std::string animationChart[6][3] = {{"idle(up)", "idle(down)", "idle(horizontal)"},
+    std::string animationChart[7][3] = {{"idle(up)", "idle(down)", "idle(horizontal)"},
                                         {"walk(up)", "walk(down)", "walk(horizontal)"},
                                         {"burrow", "burrow", "burrow"},
                                         {"jump(up)", "jump(down)", "jump(horizontal)"},
@@ -78,7 +81,8 @@ private:
                                             "dive",
                                             "dive",
                                             "dive",
-                                        }};
+                                        },
+                                        {"attack(up)", "attack(down)", "attack(horizontal)"}};
 
 public:
     Rectangle render;

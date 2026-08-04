@@ -51,6 +51,10 @@ void Player::addAnimations()
     playerRender.addAnimation("falling(horizontal)", 2, 7, 1, 1, true);
     // dive
     playerRender.addAnimation("dive", 2, 2, 1, 1, false);
+    // attack
+    playerRender.addAnimation("attack(down)", 3, 0, 6, 12, false);
+    playerRender.addAnimation("attack(up)", 3, 12, 6, 12, false);
+    playerRender.addAnimation("attack(horizontal)", 3, 6, 6, 12, false);
 }
 
 // gets two varibes && returns a normalized vector
@@ -122,9 +126,10 @@ void Player::getDir()
     else
         dir.y = 0;
 
-    /*only changes the render direction if not IDLE, so that
-    way when idle you stay facing the last moving direction*/
-    if (playerState != IDLE)
+    /*only changes the render direction if not IDLE or not ATTACKING, so that
+    way when idle you stay facing the last moving direction, and you cannot change
+    the direction of your attack mid way through*/
+    if (playerState != IDLE && playerState != ATTACKING)
     {
         if (dir.y == 1)
             renderDir = DOWN;
@@ -173,6 +178,14 @@ void Player::Jump()
     }
 }
 
+void Player::Attack()
+{
+    if (IsKeyPressed(KEY_K))
+    {
+        playerState = ATTACKING;
+    }
+}
+
 void Player::Update()
 {
     // switch statement for players action state
@@ -181,6 +194,7 @@ void Player::Update()
     case IDLE:
         animationState = idle;
         Jump();
+        Attack();
         if (IsKeyDown(KEY_A) || IsKeyDown(KEY_D) || IsKeyDown(KEY_W) || IsKeyDown(KEY_S))
         {
             playerState = WALKING;
@@ -192,6 +206,7 @@ void Player::Update()
         Move(stats.walkSpeed);
         animationState = walking;
         Jump();
+        Attack();
         if (!IsKeyDown(KEY_A) && !IsKeyDown(KEY_D) && !IsKeyDown(KEY_W) && !IsKeyDown(KEY_S))
         {
             playerState = IDLE;
@@ -272,6 +287,15 @@ void Player::Update()
             burrowTimer.Start();
             playerState = BURROWING;
         }
+        break;
+    case ATTACKING:
+        Move(stats.walkSpeed);
+        animationState = attacking;
+        if (playerRender.complete == true)
+        {
+            playerState = IDLE;
+        }
+
         break;
     }
 

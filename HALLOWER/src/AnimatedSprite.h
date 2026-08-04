@@ -11,11 +11,11 @@ class AnimatedSprite
 private:
     int curFrame;
     int frameCount;
-    bool complete;
     Rectangle source;
 
 public:
     bool flipped;
+    bool complete;
     Vector2 spriteSize;
     Vector2 position;
     Texture2D SpriteSheet;
