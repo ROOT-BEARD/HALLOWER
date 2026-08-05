@@ -158,28 +158,43 @@ void Player::Draw()
     playerRender.position = drawPos;
     // update the playerRender for animations
     playerRender.Update();
+    DrawRectangleRec(collision, ColorAlpha(RED, 0.5f));
 }
 
 /*call when player is colliding, push the player
 in the oppisite direction that they are moving*/
 void Player::Colliding()
 {
-    if (playerState == JUMPING)
+    collision = {playerPos.x + 9, playerPos.y + 14 - zPos, 6, 6};
+    if (playerState != JUMPING)
     {
-        collision = {0, 0, 0, 0};
-    }
-    else
-    {
-        collision = {playerPos.x + 9, playerPos.y + 14, 6, 6};
-        DrawRectangleRec(collision, ColorAlpha(RED, 0.5f));
-    }
-
-    for (const auto &tile : level)
-    {
-        if (CheckCollisionRecs(this->collision, tile))
+        for (const auto &tile : level)
         {
-            playerPos.x -= (dir.x * curSpeed) * GetFrameTime();
-            playerPos.y -= (dir.y * curSpeed) * GetFrameTime();
+            if (CheckCollisionRecs(this->collision, tile))
+            {
+                Rectangle overlap = GetCollisionRec(this->collision, tile);
+                if (overlap.width < overlap.height)
+                {
+                    if (dir.x > 0)
+                        playerPos.x -= overlap.width;
+                    else if (dir.x < 0)
+                        playerPos.x += overlap.width;
+                    break;
+                }
+            }
+        }
+        collision = {playerPos.x + 9, playerPos.y + 14 - zPos, 6, 6};
+        for (const auto &tile : level)
+        {
+            if (CheckCollisionRecs(this->collision, tile))
+            {
+                Rectangle overlap = GetCollisionRec(this->collision, tile);
+                if (dir.y > 0)
+                    playerPos.y -= overlap.height;
+                else if (dir.y < 0)
+                    playerPos.y += overlap.height;
+                break;
+            }
         }
     }
 }
