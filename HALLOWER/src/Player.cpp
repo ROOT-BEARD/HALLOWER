@@ -161,19 +161,38 @@ void Player::Draw()
     DrawRectangleRec(collision, ColorAlpha(RED, 0.5f));
 }
 
+bool Player::ShouldCollide(const Tile &tile)
+{
+    if (playerState == BURROWING)
+    {
+        if (tile.burrowable)
+            return false;
+        return true;
+    }
+    if (playerState == JUMPING)
+    {
+        if (tile.jumpable)
+        {
+            return false;
+        }
+        return true;
+    }
+    return true;
+}
+
 /*call when player is colliding, push the player
 in the oppisite direction that they are moving*/
 void Player::Colliding()
 {
-    collision = {playerPos.x + 9, playerPos.y + 14 - zPos, 6, 6};
-    if (playerState != JUMPING)
+    collision = {playerPos.x + 9, playerPos.y + 14, 6, 6};
+    for (const auto &tile : level)
     {
-        for (const auto &tile : level)
+        if (CheckCollisionRecs(this->collision, tile.shape))
         {
-            if (CheckCollisionRecs(this->collision, tile))
+            Rectangle overlap = GetCollisionRec(this->collision, tile.shape);
+            if (overlap.width < overlap.height)
             {
-                Rectangle overlap = GetCollisionRec(this->collision, tile);
-                if (overlap.width < overlap.height)
+                if (ShouldCollide(tile))
                 {
                     if (dir.x > 0)
                         playerPos.x -= overlap.width;
@@ -183,12 +202,15 @@ void Player::Colliding()
                 }
             }
         }
-        collision = {playerPos.x + 9, playerPos.y + 14 - zPos, 6, 6};
-        for (const auto &tile : level)
+    }
+    collision = {playerPos.x + 9, playerPos.y + 14, 6, 6};
+    for (const auto &tile : level)
+    {
+        if (CheckCollisionRecs(this->collision, tile.shape))
         {
-            if (CheckCollisionRecs(this->collision, tile))
+            if (ShouldCollide(tile))
             {
-                Rectangle overlap = GetCollisionRec(this->collision, tile);
+                Rectangle overlap = GetCollisionRec(this->collision, tile.shape);
                 if (dir.y > 0)
                     playerPos.y -= overlap.height;
                 else if (dir.y < 0)

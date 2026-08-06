@@ -4,13 +4,16 @@
 #include "player.h"
 #include "AnimatedSprite.h"
 #include "vector"
+#include "WorldManager.h"
+#include "time.h"
+#include "Tile.h"
 
 int main()
 {
     // the diminsions of the window in pixels
     Vector2 windowSize = {256, 240};
     // how much the window is scaled by
-    int windowScale = 4;
+    int windowScale = 5;
     // the window is intitatied with the dimisions of the windowSize * the window scale
     InitWindow((windowSize.x * windowScale), (windowSize.y * windowScale), "GAME");
     SetTargetFPS(60);
@@ -18,27 +21,49 @@ int main()
     RenderTexture2D gameRender = LoadRenderTexture(windowSize.x, windowSize.y);
 
     Player player;
+    WorldManager manager;
 
-    Rectangle wall = {windowSize.x / 2, windowSize.y / 2, 16, 16};
-    Rectangle wall2 = {windowSize.x / 2 + 16, windowSize.y / 2, 16, 16};
-
-    player.level.push_back(wall);
-    player.level.push_back(wall2);
+    std::vector<Tile> World = manager.createLevel({// Row 0
+                                                   2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+                                                   // Row 1
+                                                   2, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 2,
+                                                   // Row 2
+                                                   2, 0, 3, 3, 3, 0, 0, 2, 0, 1, 1, 1, 1, 0, 0, 2,
+                                                   // Row 3
+                                                   2, 0, 3, 3, 3, 0, 0, 2, 0, 0, 0, 0, 1, 0, 0, 2,
+                                                   // Row 4
+                                                   2, 0, 0, 0, 0, 0, 0, 2, 2, 2, 0, 0, 1, 0, 0, 2,
+                                                   // Row 5
+                                                   2, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2,
+                                                   // Row 6
+                                                   2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 3, 3, 0, 2,
+                                                   // Row 7
+                                                   2, 2, 2, 2, 0, 0, 2, 2, 2, 0, 3, 3, 3, 3, 0, 2,
+                                                   // Row 8
+                                                   2, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 2,
+                                                   // Row 9
+                                                   2, 0, 1, 1, 0, 0, 0, 0, 2, 0, 1, 1, 1, 0, 0, 2,
+                                                   // Row 10
+                                                   2, 0, 0, 0, 0, 3, 3, 0, 2, 0, 0, 0, 0, 0, 0, 2,
+                                                   // Row 11
+                                                   2, 0, 0, 0, 0, 3, 3, 0, 2, 2, 2, 0, 0, 2, 2, 2,
+                                                   // Row 12
+                                                   2, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2,
+                                                   // Row 13
+                                                   2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2,
+                                                   // Row 14
+                                                   2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2});
+    player.level = World;
 
     while (!WindowShouldClose())
     {
         float delta = GetFrameTime();
 
-        if (CheckCollisionRecs(player.collision, wall))
-        {
-            player.Colliding();
-        }
         // draw everything to the gameRender texture
         BeginTextureMode(gameRender);
 
         ClearBackground(BLUE);
-        DrawRectangleRec(wall, GREEN);
-        DrawRectangleRec(wall2, RED);
+        manager.drawLevel(World);
         player.Update();
         player.Draw();
 

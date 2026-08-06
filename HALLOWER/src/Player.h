@@ -6,6 +6,7 @@
 #include "AnimatedSprite.h"
 #include <string>
 #include "vector"
+#include "Tile.h"
 
 class Player
 {
@@ -14,6 +15,7 @@ private:
     void Move(float speed);
     void Jump();
     void Attack();
+    bool ShouldCollide(const Tile &tile);
     Vector2 Normalize(const Vector2 &oldDir) const;
 
     struct playerStats
@@ -88,7 +90,7 @@ private:
 public:
     Rectangle collision;
     Vector2 playerPos;
-    std::vector<Rectangle> level;
+    std::vector<Tile> level;
     Player();
     void Draw();
     void Update();
