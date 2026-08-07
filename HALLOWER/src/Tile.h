@@ -17,10 +17,12 @@ public:
     };
     bool jumpable;
     bool burrowable;
+    bool breakable;
     Color color;
     TYPE type;
     Rectangle shape;
     Tile(TYPE type, Rectangle shape);
+    void OnHit();
 };
 
 #endif TILE_H

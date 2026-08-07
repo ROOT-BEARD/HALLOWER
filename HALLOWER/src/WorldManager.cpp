@@ -21,6 +21,7 @@ std::vector<Tile> WorldManager::createLevel(std::vector<int> levelLayout)
         {
             Tile::TYPE type = Tile::WALL;
             Color color = BLACK;
+            bool breakable = false;
 
             switch (levelLayout[x])
             {
@@ -36,6 +37,11 @@ std::vector<Tile> WorldManager::createLevel(std::vector<int> levelLayout)
                 type = Tile::BURROWABLE;
                 color = RED;
                 break;
+            case 4:
+                type = Tile::WALL;
+                color = BROWN;
+                breakable = true;
+                break;
 
             default:
                 break;
@@ -44,6 +50,7 @@ std::vector<Tile> WorldManager::createLevel(std::vector<int> levelLayout)
             Rectangle shape = {(float)((x % 16) * 16), (float)(y * 16), 16.0f, 16.0f};
             Tile newTile(type, shape);
             newTile.color = color;
+            newTile.breakable = breakable;
             level.push_back(newTile);
         }
     }

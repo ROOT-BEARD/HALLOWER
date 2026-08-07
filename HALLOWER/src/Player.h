@@ -18,6 +18,7 @@ private:
     bool ShouldCollide(const Tile &tile);
     Vector2 Normalize(const Vector2 &oldDir) const;
 
+    Rectangle attackArea;
     struct playerStats
     {
         float acc = 300.0f;

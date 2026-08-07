@@ -22,6 +22,7 @@ Player::Player()
     groundedTimer = Timer(0.05f);
     bufferAmount = 0.1;
     jumpBuffer = Timer(bufferAmount);
+    attackArea = (Rectangle){playerPos.x, playerPos.y, 6, 6};
 
     addAnimations();
 }
@@ -165,6 +166,10 @@ void Player::Draw()
     // update the playerRender for animations
     playerRender.Update();
     DrawRectangleRec(collision, ColorAlpha(RED, 0.5f));
+    if (playerState == ATTACKING)
+    {
+        DrawRectangleRec(attackArea, ColorAlpha(GREEN, 0.5f));
+    }
 }
 
 bool Player::ShouldCollide(const Tile &tile)
@@ -364,6 +369,24 @@ void Player::Update()
         }
         break;
     case ATTACKING:
+    {
+        if (renderDir == UP)
+        {
+            attackArea = {playerPos.x + 8, playerPos.y, 8, 12};
+        }
+        else if (renderDir == DOWN)
+        {
+            attackArea = {playerPos.x + 8, playerPos.y + 16, 8, 12};
+        }
+        else if (renderDir == HORIZONTAL && playerRender.flipped)
+        {
+            attackArea = {playerPos.x, playerPos.y + 10, 12, 8};
+        }
+        else if (renderDir == HORIZONTAL && !playerRender.flipped)
+        {
+            attackArea = {playerPos.x + 16, playerPos.y + 10, 12, 8};
+        }
+
         Move(stats.walkSpeed);
         animationState = attacking;
         if (playerRender.complete == true)
@@ -371,7 +394,16 @@ void Player::Update()
             playerState = IDLE;
         }
 
+        for (auto &tile : level)
+        {
+            if (tile.breakable && CheckCollisionRecs(this->attackArea, tile.shape))
+            {
+                tile.OnHit();
+                tile.color = DARKBROWN;
+            }
+        }
         break;
+    }
     }
 
     // updating timers

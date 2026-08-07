@@ -9,6 +9,7 @@ Tile::Tile(TYPE type, Rectangle shape)
 {
     this->type = type;
     this->shape = shape;
+    breakable = false;
     if (type == BURROWABLE)
     {
         burrowable = true;
@@ -24,4 +25,10 @@ Tile::Tile(TYPE type, Rectangle shape)
         burrowable = false;
         jumpable = false;
     }
+}
+
+void Tile::OnHit()
+{
+    color = DARKBROWN;
+    jumpable = true;
 }
