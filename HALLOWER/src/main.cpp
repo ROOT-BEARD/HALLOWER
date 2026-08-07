@@ -1,9 +1,10 @@
+#include <iostream>
+#include <cmath>
+#include <vector>
+
 #include "raylib.h"
-#include "iostream"
-#include "cmath"
-#include "player.h"
+#include "Player.h"
 #include "AnimatedSprite.h"
-#include "vector"
 #include "WorldManager.h"
 #include "time.h"
 #include "Tile.h"
@@ -21,7 +22,13 @@ int main()
     RenderTexture2D gameRender = LoadRenderTexture(windowSize.x, windowSize.y);
 
     Player player;
+    player.playerPos = (Vector2){4 * 16.0f, 4 * 16.0f};
     WorldManager manager;
+
+    Camera2D camera = {0};
+    camera.offset = (Vector2){windowSize.x / 2.0f, windowSize.y / 2.0f};
+    camera.target.y = windowSize.y / 2.0f;
+    camera.zoom = 1.0f;
 
     std::vector<Tile> World = manager.createLevel({// Row 0
                                                    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
@@ -59,13 +66,20 @@ int main()
     {
         float delta = GetFrameTime();
 
+        player.Update();
+        camera.target.x = player.playerPos.x;
+
         // draw everything to the gameRender texture
         BeginTextureMode(gameRender);
 
         ClearBackground(BLUE);
+
+        BeginMode2D(camera);
+
         manager.drawLevel(World);
-        player.Update();
         player.Draw();
+
+        EndMode2D();
 
         EndTextureMode();
 
@@ -79,9 +93,9 @@ int main()
                        Vector2{0, 0},
                        0.0f,
                        WHITE);
-
         EndDrawing();
     }
+    UnloadRenderTexture(gameRender);
     CloseWindow();
     return 0;
 }

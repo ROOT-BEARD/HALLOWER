@@ -102,13 +102,11 @@ void Player::getDir()
     if (IsKeyDown(KEY_D))
     {
         dir.x = 1;
-        playerRender.flipped = false;
     }
     else if (IsKeyDown(KEY_A))
     {
         dir.x = -1;
         // if moving left, the render is flipped
-        playerRender.flipped = true;
     }
     else
         dir.x = 0;
@@ -135,8 +133,16 @@ void Player::getDir()
             renderDir = DOWN;
         else if (dir.y == -1)
             renderDir = UP;
-        else if (dir.x == 1 or dir.x == -1)
+        else if (dir.x == 1)
+        {
             renderDir = HORIZONTAL;
+            playerRender.flipped = false;
+        }
+        else if (dir.x == -1)
+        {
+            renderDir = HORIZONTAL;
+            playerRender.flipped = true;
+        }
     }
 
     // nomarlize the direction if moving diagonally
@@ -266,14 +272,30 @@ void Player::Update()
         }
         break;
     case BURROWING:
+    {
         animationState = burrowing;
         Move(stats.burrowSpeed);
+        bool jumpOut = true;
         if (!IsKeyDown(KEY_J) || burrowTimer.TimeOut())
         {
-            burrowJump = true;
-            playerState = JUMPING;
+            for (const auto &tile : level)
+            {
+                if (CheckCollisionRecs(this->collision, tile.shape))
+                {
+                    if (tile.burrowable)
+                    {
+                        jumpOut = false;
+                    }
+                }
+            }
+            if (jumpOut)
+            {
+                burrowJump = true;
+                playerState = JUMPING;
+            }
         }
         break;
+    }
     case JUMPING:
         if (burrowJump)
             Move(stats.walkSpeed * 2);
