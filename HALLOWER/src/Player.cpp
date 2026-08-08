@@ -94,6 +94,7 @@ void Player::Move(float speed)
     // move the play x and y postions by curSpeed * deltas
     playerPos.x += (dir.x * curSpeed * delta);
     playerPos.y += (dir.y * curSpeed * delta);
+    collision = {playerPos.x + 9, playerPos.y + 14, 6, 6};
 }
 
 // gets the direction based on the inputs being pressed
@@ -174,6 +175,7 @@ void Player::Draw()
     }
 }
 
+// checks if the player should collide based off of states and tile flags
 bool Player::ShouldCollide(const Tile &tile)
 {
     if (!tile.solid)
@@ -201,38 +203,54 @@ bool Player::ShouldCollide(const Tile &tile)
 in the oppisite direction that they are moving*/
 void Player::Colliding()
 {
+    // update the collision shape position
     collision = {playerPos.x + 9, playerPos.y + 14, 6, 6};
+    // loop for all the nearbyTiles
     for (Tile *tile : nearbyTiles)
     {
+        // check for a collision
         if (CheckCollisionRecs(this->collision, tile->shape))
         {
+            // get the overlap of the collision of the player and tile
             Rectangle overlap = GetCollisionRec(this->collision, tile->shape);
+            // run if the overlap width is shallower than the height
             if (overlap.width < overlap.height)
             {
+                // checks if the player should collide with the tile
                 if (ShouldCollide(*tile))
                 {
-                    if (dir.x > 0)
+                    /* if collision is on the left side of the tile push the player
+                    to the left side of the tile, otherwise, to the right*/
+                    if (this->collision.x < tile->shape.x)
                         playerPos.x -= overlap.width;
-                    else if (dir.x < 0)
+                    else
                         playerPos.x += overlap.width;
-                    break;
+                    // update the x position of the collision box
+                    this->collision.x = playerPos.x + 9;
                 }
             }
         }
     }
     collision = {playerPos.x + 9, playerPos.y + 14, 6, 6};
+    // loop again for all nearbyTiles
     for (Tile *tile : nearbyTiles)
     {
+        // check for collision
         if (CheckCollisionRecs(this->collision, tile->shape))
         {
+            // check if should collide
             if (ShouldCollide(*tile))
             {
+                // get overlap of the collision boxes
                 Rectangle overlap = GetCollisionRec(this->collision, tile->shape);
-                if (dir.y > 0)
+                /*if the collision is at the top of the tile push it out to the top,
+                otherwise, out to the bottom of the tile*/
+                if (this->collision.y < tile->shape.y)
                     playerPos.y -= overlap.height;
-                else if (dir.y < 0)
+                else
                     playerPos.y += overlap.height;
-                break;
+                // update the collision's y position
+                this->collision.y = playerPos.y + 14;
             }
         }
     }
@@ -258,7 +276,6 @@ void Player::Attack()
 
 void Player::Update()
 {
-    Colliding();
     // switch statement for players action state
     switch (playerState)
     {
@@ -410,7 +427,7 @@ void Player::Update()
     groundedTimer.Update();
     jumpBuffer.Update();
 
-    // Colliding();
+    Colliding();
 
     // play the current animation based off animation state and the current directon
     playerRender.playAnimation(animationChart[animationState][renderDir]);
