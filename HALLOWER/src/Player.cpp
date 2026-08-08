@@ -1,7 +1,8 @@
+#include <iostream>
+#include <cmath>
+
 #include "Player.h"
 #include "Timer.h"
-#include "iostream"
-#include "cmath"
 #include "AnimatedSprite.h"
 
 Player::Player()
@@ -23,6 +24,7 @@ Player::Player()
     bufferAmount = 0.1;
     jumpBuffer = Timer(bufferAmount);
     attackArea = (Rectangle){playerPos.x, playerPos.y, 6, 6};
+    attackActive = false;
 
     addAnimations();
 }
@@ -50,8 +52,6 @@ void Player::addAnimations()
     playerRender.addAnimation("falling(down)", 2, 0, 1, 1, true);
     playerRender.addAnimation("falling(up)", 2, 10, 1, 1, true);
     playerRender.addAnimation("falling(horizontal)", 2, 7, 1, 1, true);
-    // dive
-    playerRender.addAnimation("dive", 2, 2, 1, 1, false);
     // attack
     playerRender.addAnimation("attack(down)", 3, 0, 6, 12, false);
     playerRender.addAnimation("attack(up)", 3, 12, 6, 12, false);
@@ -107,7 +107,6 @@ void Player::getDir()
     else if (IsKeyDown(KEY_A))
     {
         dir.x = -1;
-        // if moving left, the render is flipped
     }
     else
         dir.x = 0;
@@ -134,7 +133,7 @@ void Player::getDir()
             renderDir = DOWN;
         else if (dir.y == -1)
             renderDir = UP;
-        else if (dir.x == 1)
+        if (dir.x == 1)
         {
             renderDir = HORIZONTAL;
             playerRender.flipped = false;
@@ -168,12 +167,19 @@ void Player::Draw()
     DrawRectangleRec(collision, ColorAlpha(RED, 0.5f));
     if (playerState == ATTACKING)
     {
-        DrawRectangleRec(attackArea, ColorAlpha(GREEN, 0.5f));
+        if (attackActive)
+            DrawRectangleRec(attackArea, ColorAlpha(GREEN, 0.5f));
+        else
+            DrawRectangleRec(attackArea, ColorAlpha(RED, 0.5f));
     }
 }
 
 bool Player::ShouldCollide(const Tile &tile)
 {
+    if (!tile.solid)
+    {
+        return false;
+    }
     if (playerState == BURROWING)
     {
         if (tile.burrowable)
@@ -196,14 +202,14 @@ in the oppisite direction that they are moving*/
 void Player::Colliding()
 {
     collision = {playerPos.x + 9, playerPos.y + 14, 6, 6};
-    for (const auto &tile : level)
+    for (Tile *tile : nearbyTiles)
     {
-        if (CheckCollisionRecs(this->collision, tile.shape))
+        if (CheckCollisionRecs(this->collision, tile->shape))
         {
-            Rectangle overlap = GetCollisionRec(this->collision, tile.shape);
+            Rectangle overlap = GetCollisionRec(this->collision, tile->shape);
             if (overlap.width < overlap.height)
             {
-                if (ShouldCollide(tile))
+                if (ShouldCollide(*tile))
                 {
                     if (dir.x > 0)
                         playerPos.x -= overlap.width;
@@ -215,13 +221,13 @@ void Player::Colliding()
         }
     }
     collision = {playerPos.x + 9, playerPos.y + 14, 6, 6};
-    for (const auto &tile : level)
+    for (Tile *tile : nearbyTiles)
     {
-        if (CheckCollisionRecs(this->collision, tile.shape))
+        if (CheckCollisionRecs(this->collision, tile->shape))
         {
-            if (ShouldCollide(tile))
+            if (ShouldCollide(*tile))
             {
-                Rectangle overlap = GetCollisionRec(this->collision, tile.shape);
+                Rectangle overlap = GetCollisionRec(this->collision, tile->shape);
                 if (dir.y > 0)
                     playerPos.y -= overlap.height;
                 else if (dir.y < 0)
@@ -252,6 +258,7 @@ void Player::Attack()
 
 void Player::Update()
 {
+    Colliding();
     // switch statement for players action state
     switch (playerState)
     {
@@ -283,11 +290,11 @@ void Player::Update()
         bool jumpOut = true;
         if (!IsKeyDown(KEY_J) || burrowTimer.TimeOut())
         {
-            for (const auto &tile : level)
+            for (Tile *tile : nearbyTiles)
             {
-                if (CheckCollisionRecs(this->collision, tile.shape))
+                if (CheckCollisionRecs(this->collision, tile->shape))
                 {
-                    if (tile.burrowable)
+                    if (tile->burrowable)
                     {
                         jumpOut = false;
                     }
@@ -306,12 +313,8 @@ void Player::Update()
             Move(stats.walkSpeed * 2);
         else
             Move(stats.walkSpeed);
-        if (IsKeyPressed(KEY_J) && !burrowJump)
-        {
-            playerState = DIVING;
-            break;
-        }
-        else if (IsKeyPressed(KEY_J))
+
+        if (IsKeyPressed(KEY_J))
         {
             jumpBuffer.Start();
         }
@@ -340,7 +343,11 @@ void Player::Update()
             hangTimer.Reset();
             groundedTimer.Start();
             burrowJump = false;
-            if (jumpBuffer.running && !jumpBuffer.TimeOut())
+            if (IsKeyDown(KEY_J))
+            {
+                playerState = BURROWING;
+            }
+            else if (jumpBuffer.running && !jumpBuffer.TimeOut())
             {
                 jumpBuffer.Reset();
                 animationState = jumping;
@@ -353,53 +360,43 @@ void Player::Update()
         }
 
         break;
-    case DIVING:
-        animationState = diving;
-        Move(stats.walkSpeed * 1.5);
-
-        zPos -= 200.0 * GetFrameTime();
-
-        if (zPos <= 0)
-        {
-            zPos = 0;
-            hangTimer.Reset();
-
-            burrowTimer.Start();
-            playerState = BURROWING;
-        }
-        break;
     case ATTACKING:
     {
-        if (renderDir == UP)
-        {
-            attackArea = {playerPos.x + 8, playerPos.y, 8, 12};
-        }
-        else if (renderDir == DOWN)
-        {
-            attackArea = {playerPos.x + 8, playerPos.y + 16, 8, 12};
-        }
-        else if (renderDir == HORIZONTAL && playerRender.flipped)
-        {
-            attackArea = {playerPos.x, playerPos.y + 10, 12, 8};
-        }
-        else if (renderDir == HORIZONTAL && !playerRender.flipped)
-        {
-            attackArea = {playerPos.x + 16, playerPos.y + 10, 12, 8};
-        }
-
         Move(stats.walkSpeed);
         animationState = attacking;
+        switch (renderDir)
+        {
+        case UP:
+            attackArea = {playerPos.x + 8, playerPos.y, 8, 12};
+            break;
+        case DOWN:
+            attackArea = {playerPos.x + 8, playerPos.y + 16, 8, 12};
+            break;
+        case HORIZONTAL:
+            if (playerRender.flipped)
+                attackArea = {playerPos.x, playerPos.y + 10, 12, 8};
+            else
+                attackArea = {playerPos.x + 16, playerPos.y + 10, 12, 8};
+            break;
+
+        default:
+            break;
+        }
+
+        if (playerRender.curFrame == playerRender.Animations[playerRender.currentAnimation].startFrame + 3)
+            attackActive = true;
+        else if (playerRender.curFrame == playerRender.Animations[playerRender.currentAnimation].startFrame + 5)
+            attackActive = false;
         if (playerRender.complete == true)
         {
             playerState = IDLE;
         }
 
-        for (auto &tile : level)
+        for (Tile *tile : nearbyTiles)
         {
-            if (tile.breakable && CheckCollisionRecs(this->attackArea, tile.shape))
+            if (tile->breakable && CheckCollisionRecs(this->attackArea, tile->shape) && attackActive)
             {
-                tile.OnHit();
-                tile.color = DARKBROWN;
+                tile->OnHit();
             }
         }
         break;
@@ -412,7 +409,7 @@ void Player::Update()
     groundedTimer.Update();
     jumpBuffer.Update();
 
-    Colliding();
+    // Colliding();
 
     // play the current animation based off animation state and the current directon
     playerRender.playAnimation(animationChart[animationState][renderDir]);

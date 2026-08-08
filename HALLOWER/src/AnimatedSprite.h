@@ -9,11 +9,11 @@
 class AnimatedSprite
 {
 private:
-    int curFrame;
     int frameCount;
     Rectangle source;
 
 public:
+    int curFrame;
     bool flipped;
     bool complete;
     Vector2 spriteSize;

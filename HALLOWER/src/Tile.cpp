@@ -9,6 +9,7 @@ Tile::Tile(TYPE type, Rectangle shape)
 {
     this->type = type;
     this->shape = shape;
+    this->solid = true;
     breakable = false;
     if (type == BURROWABLE)
     {
@@ -24,6 +25,10 @@ Tile::Tile(TYPE type, Rectangle shape)
     {
         burrowable = false;
         jumpable = false;
+    }
+    else if (type == EMPTY)
+    {
+        solid = false;
     }
 }
 

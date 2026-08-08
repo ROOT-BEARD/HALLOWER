@@ -24,7 +24,6 @@ AnimatedSprite::AnimatedSprite(std::string SpriteSheet, Vector2 spriteSize)
 void AnimatedSprite::addAnimation(std::string name, int row, int startFrame, int frames, int fps, bool looping)
 {
     Animations[name] = animation{name, row, startFrame, frames, fps, looping, false, false};
-    std::cout << Animations.size() << std::endl;
 }
 
 void AnimatedSprite::playAnimation(std::string name)

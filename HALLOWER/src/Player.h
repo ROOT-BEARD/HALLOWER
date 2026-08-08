@@ -7,6 +7,7 @@
 #include <string>
 #include "vector"
 #include "Tile.h"
+#include "WorldManager.h"
 
 class Player
 {
@@ -19,10 +20,11 @@ private:
     Vector2 Normalize(const Vector2 &oldDir) const;
 
     Rectangle attackArea;
+    bool attackActive;
     struct playerStats
     {
         float acc = 300.0f;
-        float burrowTime = 2.0f;
+        float burrowTime = 1.0f;
         float burrowSpeed = 100.0f;
         float walkSpeed = 50.0f;
         float cooldown = 1.25f;
@@ -52,7 +54,6 @@ private:
         WALKING,
         BURROWING,
         JUMPING,
-        DIVING,
         ATTACKING
     };
     enum ANIMATIONSTATE
@@ -62,7 +63,6 @@ private:
         burrowing,
         jumping,
         falling,
-        diving,
         attacking
     };
     enum RENDERDIR
@@ -76,22 +76,17 @@ private:
     RENDERDIR renderDir;
     PLAYERSTATE playerState;
 
-    std::string animationChart[7][3] = {{"idle(up)", "idle(down)", "idle(horizontal)"},
+    std::string animationChart[6][3] = {{"idle(up)", "idle(down)", "idle(horizontal)"},
                                         {"walk(up)", "walk(down)", "walk(horizontal)"},
                                         {"burrow", "burrow", "burrow"},
                                         {"jump(up)", "jump(down)", "jump(horizontal)"},
                                         {"falling(up)", "falling(down)", "falling(horizontal)"},
-                                        {
-                                            "dive",
-                                            "dive",
-                                            "dive",
-                                        },
                                         {"attack(up)", "attack(down)", "attack(horizontal)"}};
 
 public:
     Rectangle collision;
     Vector2 playerPos;
-    std::vector<Tile> level;
+    std::vector<Tile *> nearbyTiles;
     Player();
     void Draw();
     void Update();

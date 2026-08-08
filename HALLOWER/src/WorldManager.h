@@ -9,8 +9,10 @@ class WorldManager
 {
 public:
     WorldManager(/* args */);
-    std::vector<Tile> createLevel(std::vector<int> levelLayout);
-    void drawLevel(std::vector<Tile> level);
+    std::vector<Tile> World;
+    void createLevel(std::vector<int> &levelLayout);
+    void drawLevel(std::vector<Tile> &level);
+    std::vector<Tile *> getNearbyTiles(Vector2 position);
 };
 
 #endif

@@ -13,11 +13,13 @@ public:
     {
         WALL,
         JUMPABLE,
-        BURROWABLE
+        BURROWABLE,
+        EMPTY
     };
     bool jumpable;
     bool burrowable;
     bool breakable;
+    bool solid;
     Color color;
     TYPE type;
     Rectangle shape;

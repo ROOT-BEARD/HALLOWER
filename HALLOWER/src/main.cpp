@@ -22,51 +22,53 @@ int main()
     RenderTexture2D gameRender = LoadRenderTexture(windowSize.x, windowSize.y);
 
     Player player;
-    player.playerPos = (Vector2){4 * 16.0f, 4 * 16.0f};
     WorldManager manager;
+    player.playerPos = (Vector2){4 * 16.0f, 4 * 16.0f};
 
     Camera2D camera = {0};
     camera.offset = (Vector2){windowSize.x / 2.0f, windowSize.y / 2.0f};
     camera.target.y = windowSize.y / 2.0f;
     camera.zoom = 1.0f;
 
-    std::vector<Tile> World = manager.createLevel({// Row 0
-                                                   2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-                                                   // Row 1
-                                                   2, 0, 0, 0, 4, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 2,
-                                                   // Row 2
-                                                   2, 0, 4, 4, 4, 0, 0, 2, 0, 1, 1, 1, 1, 0, 0, 2,
-                                                   // Row 3
-                                                   2, 0, 4, 4, 4, 0, 0, 2, 0, 0, 0, 0, 1, 0, 0, 2,
-                                                   // Row 4
-                                                   2, 0, 0, 0, 0, 0, 0, 2, 2, 2, 0, 0, 1, 0, 0, 2,
-                                                   // Row 5
-                                                   2, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2,
-                                                   // Row 6
-                                                   2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 3, 3, 0, 2,
-                                                   // Row 7
-                                                   2, 2, 2, 2, 0, 0, 2, 2, 2, 0, 3, 3, 3, 3, 0, 2,
-                                                   // Row 8
-                                                   2, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 2,
-                                                   // Row 9
-                                                   2, 0, 1, 1, 0, 0, 0, 0, 2, 0, 1, 1, 1, 0, 0, 2,
-                                                   // Row 10
-                                                   2, 0, 0, 0, 0, 3, 3, 0, 2, 0, 0, 0, 0, 0, 0, 2,
-                                                   // Row 11
-                                                   2, 0, 0, 0, 0, 3, 3, 0, 2, 2, 2, 0, 0, 2, 2, 2,
-                                                   // Row 12
-                                                   2, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2,
-                                                   // Row 13
-                                                   2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2,
-                                                   // Row 14
-                                                   2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2});
-    player.level = World;
+    std::vector<int> level = {// Row 0
+                              2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+                              // Row 1
+                              2, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 2,
+                              // Row 2
+                              2, 0, 4, 4, 4, 0, 0, 2, 0, 1, 1, 1, 1, 0, 0, 2,
+                              // Row 3
+                              2, 0, 4, 4, 4, 0, 0, 2, 0, 0, 0, 0, 1, 0, 0, 2,
+                              // Row 4
+                              2, 0, 0, 0, 0, 0, 0, 2, 2, 2, 0, 0, 1, 0, 0, 2,
+                              // Row 5
+                              2, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2,
+                              // Row 6
+                              2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 3, 3, 0, 2,
+                              // Row 7
+                              2, 2, 2, 2, 0, 0, 2, 2, 2, 0, 3, 3, 3, 3, 0, 2,
+                              // Row 8
+                              2, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 2,
+                              // Row 9
+                              2, 0, 1, 1, 0, 0, 0, 0, 2, 0, 1, 1, 1, 0, 0, 2,
+                              // Row 10
+                              2, 0, 0, 0, 0, 3, 3, 0, 2, 0, 0, 0, 0, 0, 0, 2,
+                              // Row 11
+                              2, 0, 0, 0, 0, 3, 3, 0, 2, 2, 2, 0, 0, 2, 2, 2,
+                              // Row 12
+                              2, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2,
+                              // Row 13
+                              2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2,
+                              // Row 14
+                              2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2};
+    manager.createLevel(level);
 
     while (!WindowShouldClose())
     {
         float delta = GetFrameTime();
 
         player.Update();
+        player.nearbyTiles = manager.getNearbyTiles({player.collision.x, player.collision.y});
+
         camera.target.x = player.playerPos.x;
 
         // draw everything to the gameRender texture
@@ -76,7 +78,7 @@ int main()
 
         BeginMode2D(camera);
 
-        manager.drawLevel(player.level);
+        manager.drawLevel(manager.World);
         player.Draw();
 
         EndMode2D();
