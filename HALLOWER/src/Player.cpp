@@ -345,6 +345,7 @@ void Player::Update()
             burrowJump = false;
             if (IsKeyDown(KEY_J))
             {
+                burrowTimer.Start();
                 playerState = BURROWING;
             }
             else if (jumpBuffer.running && !jumpBuffer.TimeOut())
