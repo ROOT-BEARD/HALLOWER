@@ -23,7 +23,7 @@ Player::Player()
     groundedTimer = Timer(0.05f);
     bufferAmount = 0.1;
     jumpBuffer = Timer(bufferAmount);
-    attackArea = (Rectangle){playerPos.x, playerPos.y, 6, 6};
+    attackArea = {playerPos.x, playerPos.y, 6, 6};
     attackActive = false;
 
     addAnimations();

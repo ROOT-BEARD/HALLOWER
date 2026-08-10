@@ -23,12 +23,7 @@ int main()
 
     Player player;
     WorldManager manager;
-    player.playerPos = (Vector2){4 * 16.0f, 4 * 16.0f};
-
-    Camera2D camera = {0};
-    camera.offset = (Vector2){windowSize.x / 2.0f, windowSize.y / 2.0f};
-    camera.target.y = windowSize.y / 2.0f;
-    camera.zoom = 1.0f;
+    player.playerPos = {4 * 16.0f, 4 * 16.0f};
 
     std::vector<int> level = {// Row 0
                               2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
@@ -69,19 +64,13 @@ int main()
         player.Update();
         player.nearbyTiles = manager.getNearbyTiles({player.collision.x, player.collision.y});
 
-        camera.target.x = player.playerPos.x;
-
         // draw everything to the gameRender texture
         BeginTextureMode(gameRender);
 
         ClearBackground(BLUE);
 
-        BeginMode2D(camera);
-
         manager.drawLevel(manager.World);
         player.Draw();
-
-        EndMode2D();
 
         EndTextureMode();
 
