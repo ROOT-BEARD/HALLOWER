@@ -13,7 +13,7 @@ class Player
 {
 private:
     void getDir();
-    void Move(float speed);
+    void Move(float speed, float delta);
     void Jump();
     void Attack();
     bool ShouldCollide(const Tile &tile);
@@ -54,7 +54,8 @@ private:
         WALKING,
         BURROWING,
         JUMPING,
-        ATTACKING
+        ATTACKING,
+        FALLINGPIT
     };
     enum ANIMATIONSTATE
     {
@@ -63,7 +64,8 @@ private:
         burrowing,
         jumping,
         falling,
-        attacking
+        attacking,
+        fallingpit
     };
     enum RENDERDIR
     {
@@ -72,16 +74,18 @@ private:
         HORIZONTAL
     };
 
+    Texture2D shadowTexture;
     ANIMATIONSTATE animationState;
     RENDERDIR renderDir;
     PLAYERSTATE playerState;
 
-    std::string animationChart[6][3] = {{"idle(up)", "idle(down)", "idle(horizontal)"},
+    std::string animationChart[7][3] = {{"idle(up)", "idle(down)", "idle(horizontal)"},
                                         {"walk(up)", "walk(down)", "walk(horizontal)"},
                                         {"burrow", "burrow", "burrow"},
                                         {"jump(up)", "jump(down)", "jump(horizontal)"},
                                         {"falling(up)", "falling(down)", "falling(horizontal)"},
-                                        {"attack(up)", "attack(down)", "attack(horizontal)"}};
+                                        {"attack(up)", "attack(down)", "attack(horizontal)"},
+                                        {"falling(pit)", "falling(pit)", "falling(pit)"}};
 
 public:
     Rectangle collision;
@@ -89,7 +93,7 @@ public:
     std::vector<Tile *> nearbyTiles;
     Player();
     void Draw();
-    void Update();
+    void Update(float delta);
     void Colliding();
 };
 

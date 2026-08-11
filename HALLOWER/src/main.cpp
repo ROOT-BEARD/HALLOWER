@@ -8,6 +8,7 @@
 #include "WorldManager.h"
 #include "time.h"
 #include "Tile.h"
+#include "GrassTile.h"
 
 int main()
 {
@@ -21,47 +22,53 @@ int main()
     // RenderTexture that is drawen to and scaled up to fit the screen
     RenderTexture2D gameRender = LoadRenderTexture(windowSize.x, windowSize.y);
 
+    std::string bg = "Art/background.png";
+    Texture2D backGround = LoadTexture(bg.c_str());
+    std::string fg = "Art/foreground.png";
+    Texture2D foreGround = LoadTexture(fg.c_str());
+
     Player player;
     WorldManager manager;
-    player.playerPos = {4 * 16.0f, 4 * 16.0f};
+    player.playerPos = {2 * 16.0f, 2 * 16.0f};
+    float delta = GetFrameTime();
 
     std::vector<int> level = {// Row 0
                               2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
                               // Row 1
-                              2, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 2,
+                              2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
                               // Row 2
-                              2, 0, 4, 4, 4, 0, 0, 2, 0, 1, 1, 1, 1, 0, 0, 2,
+                              0, 0, 0, 2, 5, 4, 4, 4, 4, 0, 0, 2, 2, 2, 2, 2,
                               // Row 3
-                              2, 0, 4, 4, 4, 0, 0, 2, 0, 0, 0, 0, 1, 0, 0, 2,
+                              0, 0, 0, 3, 5, 4, 4, 4, 4, 0, 0, 2, 2, 2, 2, 2,
                               // Row 4
-                              2, 0, 0, 0, 0, 0, 0, 2, 2, 2, 0, 0, 1, 0, 0, 2,
+                              0, 0, 0, 3, 5, 4, 4, 4, 4, 0, 0, 1, 0, 2, 2, 2,
                               // Row 5
-                              2, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2,
+                              0, 0, 0, 3, 5, 0, 0, 0, 0, 0, 0, 1, 0, 2, 2, 2,
                               // Row 6
-                              2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 3, 3, 0, 2,
+                              0, 0, 0, 3, 5, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2,
                               // Row 7
-                              2, 2, 2, 2, 0, 0, 2, 2, 2, 0, 3, 3, 3, 3, 0, 2,
+                              0, 0, 0, 3, 5, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2,
                               // Row 8
-                              2, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 2,
+                              0, 0, 0, 2, 5, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 0,
                               // Row 9
-                              2, 0, 1, 1, 0, 0, 0, 0, 2, 0, 1, 1, 1, 0, 0, 2,
+                              2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 5, 5, 0, 0,
                               // Row 10
-                              2, 0, 0, 0, 0, 3, 3, 0, 2, 0, 0, 0, 0, 0, 0, 2,
+                              2, 2, 2, 2, 2, 2, 4, 0, 0, 0, 0, 0, 5, 5, 0, 0,
                               // Row 11
-                              2, 0, 0, 0, 0, 3, 3, 0, 2, 2, 2, 0, 0, 2, 2, 2,
+                              2, 2, 2, 2, 2, 2, 4, 4, 4, 0, 0, 0, 5, 5, 0, 0,
                               // Row 12
-                              2, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2,
+                              2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
                               // Row 13
-                              2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2,
+                              2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
                               // Row 14
                               2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2};
     manager.createLevel(level);
 
     while (!WindowShouldClose())
     {
-        float delta = GetFrameTime();
+        delta = GetFrameTime();
 
-        player.Update();
+        player.Update(delta);
         player.nearbyTiles = manager.getNearbyTiles({player.collision.x, player.collision.y});
 
         // draw everything to the gameRender texture
@@ -69,8 +76,11 @@ int main()
 
         ClearBackground(BLUE);
 
-        manager.drawLevel(manager.World);
+        DrawTexture(backGround, 0, 0, WHITE);
+        manager.drawGrass(manager.World);
         player.Draw();
+
+        DrawTexture(foreGround, 0, 0, WHITE);
 
         EndTextureMode();
 

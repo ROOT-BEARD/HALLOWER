@@ -11,6 +11,7 @@ Player::Player()
     renderDir = DOWN;
     playerState = IDLE;
     playerRender = AnimatedSprite("Art/playerSheet.png", Vector2{24, 24});
+    shadowTexture = LoadTexture("Art/shadow.png");
     dir = Vector2{0.0f, 0.0f};
     zPos = 0;
     playerPos = Vector2{32.0f, 32.0f};
@@ -25,7 +26,6 @@ Player::Player()
     jumpBuffer = Timer(bufferAmount);
     attackArea = {playerPos.x, playerPos.y, 6, 6};
     attackActive = false;
-
     addAnimations();
 }
 
@@ -43,7 +43,7 @@ void Player::addAnimations()
     playerRender.addAnimation("idle(down)", 0, 0, 1, 1, true);
     playerRender.addAnimation("idle(horizontal)", 0, 1, 1, 1, true);
     // burrowing
-    playerRender.addAnimation("burrow", 3, 0, 1, 1, true);
+    playerRender.addAnimation("burrow", 5, 0, 6, 12, true);
     // jumping
     playerRender.addAnimation("jump(down)", 2, 0, 3, 4, true);
     playerRender.addAnimation("jump(up)", 2, 10, 3, 4, true);
@@ -56,6 +56,8 @@ void Player::addAnimations()
     playerRender.addAnimation("attack(down)", 3, 0, 6, 12, false);
     playerRender.addAnimation("attack(up)", 3, 12, 6, 12, false);
     playerRender.addAnimation("attack(horizontal)", 3, 6, 6, 12, false);
+    // falling
+    playerRender.addAnimation("falling(pit)", 4, 0, 12, 8, false);
 }
 
 // gets two varibes && returns a normalized vector
@@ -75,21 +77,16 @@ Vector2 Player::Normalize(const Vector2 &oldDir) const
 }
 
 // move the player with the top speed passed in as "speed"
-void Player::Move(float speed)
+void Player::Move(float speed, float delta)
 {
-    // gets the currentFrame time
-    float delta = GetFrameTime();
     // gets the current directon inputs
     getDir();
     // if the curspeed is less than the top speed, increase it by the accleration * delta
-    if (curSpeed < speed)
+    if (dir.x != 0 || dir.y != 0)
     {
         curSpeed += stats.acc * delta;
-    }
-    else
-    {
-        // other wise cap the curSpeed to the passed in top speed
-        curSpeed = speed;
+        if (curSpeed >= speed)
+            curSpeed = speed;
     }
     // move the play x and y postions by curSpeed * deltas
     playerPos.x += (dir.x * curSpeed * delta);
@@ -158,21 +155,28 @@ void Player::Draw()
 {
     /*where the player will be drawn to, the y position is subtracted
     by the zPos to allow player to jump*/
-    Vector2 drawPos = {playerPos.x, playerPos.y - zPos};
-    // the rectangle being used in place of a shadow sprite
-    DrawRectangle(playerPos.x + 6, playerPos.y + 19, 12, 2, BLACK);
+    float roundedX = std::round(playerPos.x);
+    float roundedY = std::round(playerPos.y);
+    Vector2 drawPos = {roundedX, roundedY - zPos};
+    if (playerState != FALLINGPIT && playerState != BURROWING)
+    {
+        // the rectangle being used in place of a shadow sprite
+        DrawTexture(shadowTexture, roundedX + 7, roundedY + 16, WHITE);
+    }
     // make the playerRender position = to the new drawPos
     playerRender.position = drawPos;
     // update the playerRender for animations
     playerRender.Update();
-    DrawRectangleRec(collision, ColorAlpha(RED, 0.5f));
-    if (playerState == ATTACKING)
+
+    // the attack and playe collision boxes
+    // DrawRectangleRec(collision, ColorAlpha(RED, 0.5f));
+    /*if (playerState == ATTACKING)
     {
         if (attackActive)
             DrawRectangleRec(attackArea, ColorAlpha(GREEN, 0.5f));
         else
             DrawRectangleRec(attackArea, ColorAlpha(RED, 0.5f));
-    }
+    }*/
 }
 
 // checks if the player should collide based off of states and tile flags
@@ -229,6 +233,10 @@ void Player::Colliding()
                     this->collision.x = playerPos.x + 9;
                 }
             }
+            if (tile->type == Tile::PIT && playerState != JUMPING)
+            {
+                playerState = FALLINGPIT;
+            }
         }
     }
     collision = {playerPos.x + 9, playerPos.y + 14, 6, 6};
@@ -274,7 +282,7 @@ void Player::Attack()
     }
 }
 
-void Player::Update()
+void Player::Update(float delta)
 {
     // switch statement for players action state
     switch (playerState)
@@ -291,7 +299,7 @@ void Player::Update()
             curSpeed = 0.0f;
         break;
     case WALKING:
-        Move(stats.walkSpeed);
+        Move(stats.walkSpeed, delta);
         animationState = walking;
         Jump();
         Attack();
@@ -303,7 +311,7 @@ void Player::Update()
     case BURROWING:
     {
         animationState = burrowing;
-        Move(stats.burrowSpeed);
+        Move(stats.burrowSpeed, delta);
         bool jumpOut = true;
         if (!IsKeyDown(KEY_J) || burrowTimer.TimeOut())
         {
@@ -327,9 +335,9 @@ void Player::Update()
     }
     case JUMPING:
         if (burrowJump)
-            Move(stats.walkSpeed * 2);
+            Move(stats.walkSpeed * 2, delta);
         else
-            Move(stats.walkSpeed);
+            Move(stats.walkSpeed, delta);
 
         if (IsKeyPressed(KEY_J))
         {
@@ -339,7 +347,7 @@ void Player::Update()
         if (zPos < stats.jumpHeight && animationState != falling)
         {
             animationState = jumping;
-            zPos += stats.jumpVel * GetFrameTime();
+            zPos += stats.jumpVel * delta;
             if (zPos >= stats.jumpHeight)
             {
                 zPos = stats.jumpHeight;
@@ -351,7 +359,7 @@ void Player::Update()
         if (!grounded && hangTimer.TimeOut())
         {
             animationState = falling;
-            zPos -= stats.gravity * GetFrameTime();
+            zPos -= stats.gravity * delta;
         }
 
         if (zPos <= 0)
@@ -369,7 +377,7 @@ void Player::Update()
             {
                 jumpBuffer.Reset();
                 animationState = jumping;
-                zPos += stats.jumpVel * GetFrameTime();
+                zPos += stats.jumpVel * delta;
             }
             else
             {
@@ -380,21 +388,21 @@ void Player::Update()
         break;
     case ATTACKING:
     {
-        Move(stats.walkSpeed);
+        Move(stats.walkSpeed, delta);
         animationState = attacking;
         switch (renderDir)
         {
         case UP:
-            attackArea = {playerPos.x + 8, playerPos.y, 8, 12};
+            attackArea = {playerPos.x + 10, playerPos.y + 4, 4, 10};
             break;
         case DOWN:
-            attackArea = {playerPos.x + 8, playerPos.y + 16, 8, 12};
+            attackArea = {playerPos.x + 10, playerPos.y + 12, 4, 10};
             break;
         case HORIZONTAL:
             if (playerRender.flipped)
-                attackArea = {playerPos.x, playerPos.y + 10, 12, 8};
+                attackArea = {playerPos.x, playerPos.y + 10, 10, 4};
             else
-                attackArea = {playerPos.x + 16, playerPos.y + 10, 12, 8};
+                attackArea = {playerPos.x + 12, playerPos.y + 10, 10, 4};
             break;
 
         default:
@@ -403,7 +411,7 @@ void Player::Update()
 
         if (playerRender.curFrame == playerRender.Animations[playerRender.currentAnimation].startFrame + 3)
             attackActive = true;
-        else if (playerRender.curFrame == playerRender.Animations[playerRender.currentAnimation].startFrame + 5)
+        else if (playerRender.curFrame == playerRender.Animations[playerRender.currentAnimation].startFrame + 4)
             attackActive = false;
         if (playerRender.complete == true)
         {
@@ -416,6 +424,14 @@ void Player::Update()
             {
                 tile->OnHit();
             }
+        }
+        break;
+    case FALLINGPIT:
+        animationState = fallingpit;
+        if (playerRender.complete && playerRender.currentAnimation == "falling(pit)")
+        {
+            playerPos = {1 * 16, 2 * 16};
+            playerState = IDLE;
         }
         break;
     }

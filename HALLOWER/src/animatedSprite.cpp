@@ -66,7 +66,6 @@ void AnimatedSprite::Update()
                     curFrame = endFrame - 1;
                     Animations[currentAnimation].finished = true;
                 }
-                curFrame = Animations[currentAnimation].startFrame;
                 complete = true;
             }
         }

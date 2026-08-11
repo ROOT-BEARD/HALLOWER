@@ -3,6 +3,7 @@
 #include "raylib.h"
 #include "WorldManager.h"
 #include "Tile.h"
+#include "GrassTile.h"
 
 WorldManager::WorldManager()
 {
@@ -10,7 +11,7 @@ WorldManager::WorldManager()
 }
 
 // creates the level based off an int array
-void WorldManager::createLevel(std::vector<int> &levelLayout)
+void WorldManager::createLevel(const std::vector<int> &levelLayout)
 {
     World.clear();
 
@@ -25,6 +26,8 @@ void WorldManager::createLevel(std::vector<int> &levelLayout)
         // defualt type and color of the tile
         Tile::TYPE type = Tile::WALL;
         Color color = BLACK;
+        int width = 16;
+        int xOffset = 0;
         bool breakable = false;
 
         // changes the tiles attributes based of the indexes value
@@ -49,19 +52,31 @@ void WorldManager::createLevel(std::vector<int> &levelLayout)
         case 3:
             type = Tile::BURROWABLE;
             color = RED;
+            width = 10;
+            xOffset = 3;
             break;
         // 4 = wall tile that is breakable
         case 4:
-            type = Tile::WALL;
+            type = Tile::GRASS;
             color = BEIGE;
             breakable = true;
+            break;
+        case 5:
+            type = Tile::PIT;
+            color = BLACK;
+            width = 10;
+            xOffset = 3;
             break;
 
         default:
             break;
         }
         /*create the tiles shape and position based of the current x of the for loop*/
-        Rectangle shape = {(float)((x % 16) * 16), (float)(y * 16), 16.0f, 16.0f};
+        Rectangle shape;
+        shape.x = (float)(((x % 16) * 16) + xOffset);
+        shape.y = (float)(y * 16);
+        shape.height = 16;
+        shape.width = width;
         // create a new tile of the type and shape
         Tile newTile(type, shape);
         // set the color and breakable flag
@@ -73,12 +88,17 @@ void WorldManager::createLevel(std::vector<int> &levelLayout)
 }
 
 // draws the level based on the vector of tiles
-void WorldManager::drawLevel(std::vector<Tile> &level)
+void WorldManager::drawGrass(std::vector<Tile> &level)
 {
-    // loops trough each tile of the passed in vector and draw it based on the tile shape and color
-    for (Tile tile : level)
+    // loops through and draws each grass tile
+    for (const Tile &tile : level)
     {
-        DrawRectangleRec(tile.shape, tile.color);
+        // use this to see tiles collisions DrawRectangleRec(tile.shape, tile.color);
+        if (tile.type == Tile::GRASS)
+        {
+            grassRenderer.position = Vector2{tile.shape.x, tile.shape.y};
+            grassRenderer.Draw();
+        }
     }
 }
 

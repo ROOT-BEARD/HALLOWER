@@ -4,14 +4,18 @@
 #include <vector>
 #include "raylib.h"
 #include "Tile.h"
+#include "GrassTile.h"
 
 class WorldManager
 {
+private:
+    GrassTile grassRenderer;
+
 public:
     WorldManager(/* args */);
     std::vector<Tile> World;
-    void createLevel(std::vector<int> &levelLayout);
-    void drawLevel(std::vector<Tile> &level);
+    void createLevel(const std::vector<int> &levelLayout);
+    void drawGrass(std::vector<Tile> &level);
     std::vector<Tile *> getNearbyTiles(Vector2 position);
 };
 

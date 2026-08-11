@@ -6,7 +6,8 @@
 class Tile
 {
 private:
-    /* data */
+    void updateTile();
+
 public:
     Tile();
     enum TYPE
@@ -14,17 +15,19 @@ public:
         WALL,
         JUMPABLE,
         BURROWABLE,
-        EMPTY
+        EMPTY,
+        PIT,
+        GRASS
     };
+    TYPE type;
     bool jumpable;
     bool burrowable;
     bool breakable;
     bool solid;
     Color color;
-    TYPE type;
     Rectangle shape;
     Tile(TYPE type, Rectangle shape);
     void OnHit();
 };
 
-#endif TILE_H
+#endif
