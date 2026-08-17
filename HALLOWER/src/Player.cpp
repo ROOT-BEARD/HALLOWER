@@ -5,6 +5,7 @@
 #include "Timer.h"
 #include "AnimatedSprite.h"
 
+// constructor
 Player::Player()
 {
     animationState = idle;
@@ -20,7 +21,6 @@ Player::Player()
     hangTimer = Timer(stats.hangTime);
     grounded = true;
     burrowJump = false;
-    // used mostly in place of a landing animation
     groundedTimer = Timer(0.05f);
     bufferAmount = 0.1;
     jumpBuffer = Timer(bufferAmount);
@@ -58,6 +58,8 @@ void Player::addAnimations()
     playerRender.addAnimation("attack(horizontal)", 3, 6, 6, 12, false);
     // falling
     playerRender.addAnimation("falling(pit)", 4, 0, 12, 8, false);
+    // sliding
+    playerRender.addAnimation("sliding", 4, 0, 1, 8, false);
 }
 
 // gets two varibes && returns a normalized vector
@@ -81,16 +83,20 @@ void Player::Move(float speed, float delta)
 {
     // gets the current directon inputs
     getDir();
-    // if the curspeed is less than the top speed, increase it by the accleration * delta
+    // checks to see if you are moving in at least one direction
     if (dir.x != 0 || dir.y != 0)
     {
+        // increases speed by accereation * delta
         curSpeed += stats.acc * delta;
+        // caps the speed to the top speed passed through
         if (curSpeed >= speed)
             curSpeed = speed;
     }
-    // move the play x and y postions by curSpeed * deltas
+
+    // move the play x and y postions by curSpeed * delta
     playerPos.x += (dir.x * curSpeed * delta);
     playerPos.y += (dir.y * curSpeed * delta);
+    // update the collision rect
     collision = {playerPos.x + 9, playerPos.y + 14, 6, 6};
 }
 
@@ -168,9 +174,9 @@ void Player::Draw()
     // update the playerRender for animations
     playerRender.Update();
 
-    // the attack and playe collision boxes
-    // DrawRectangleRec(collision, ColorAlpha(RED, 0.5f));
-    /*if (playerState == ATTACKING)
+    /* the attack and player collision boxes, used for debugging
+    DrawRectangleRec(collision, ColorAlpha(RED, 0.5f));
+    if (playerState == ATTACKING)
     {
         if (attackActive)
             DrawRectangleRec(attackArea, ColorAlpha(GREEN, 0.5f));
@@ -190,23 +196,23 @@ bool Player::ShouldCollide(const Tile &tile)
     {
         if (tile.burrowable)
             return false;
-        return true;
     }
     if (playerState == JUMPING)
     {
         if (tile.jumpable)
-        {
             return false;
-        }
-        return true;
     }
     return true;
 }
 
-/*call when player is colliding, push the player
-in the oppisite direction that they are moving*/
-void Player::Colliding()
+/*used to check for collisions, and if so, updates the players position*/
+void Player::Collide()
 {
+    // if the player is sliding return
+    if (playerState == SLIDING)
+    {
+        return;
+    }
     // update the collision shape position
     collision = {playerPos.x + 9, playerPos.y + 14, 6, 6};
     // loop for all the nearbyTiles
@@ -215,17 +221,33 @@ void Player::Colliding()
         // check for a collision
         if (CheckCollisionRecs(this->collision, tile->shape))
         {
-            // get the overlap of the collision of the player and tile
-            Rectangle overlap = GetCollisionRec(this->collision, tile->shape);
-            // run if the overlap width is shallower than the height
-            if (overlap.width < overlap.height)
+            // the the player runs into a pit change state and return
+            if (tile->type == Tile::PIT && playerState != JUMPING)
             {
-                // checks if the player should collide with the tile
-                if (ShouldCollide(*tile))
+                playerState = FALLINGPIT;
+                return;
+            }
+            // checks if the player should collide with the tile
+            if (ShouldCollide(*tile))
+            {
+                // get the overlap of the collision of the player and tile
+                Rectangle overlap = GetCollisionRec(this->collision, tile->shape);
+                /*if landing on a jumpable tile and collision completley overlaps, make the player slide back to the last saved
+                safe spot, and return*/
+                if (tile->jumpable && groundedTimer.running && overlap.width >= overlap.height && overlap.height >= overlap.width)
                 {
+                    playerState = SLIDING;
+                    return;
+                }
+                // if the overlap width is shallower then the height, resolve the x axis
+                if (overlap.width <= overlap.height)
+                {
+                    // get the center of both tile and player collision
+                    float playerCenterX = this->collision.x + (this->collision.width / 2.0f);
+                    float tileCenterX = tile->shape.x + (tile->shape.width / 2.0f);
                     /* if collision is on the left side of the tile push the player
                     to the left side of the tile, otherwise, to the right*/
-                    if (this->collision.x < tile->shape.x)
+                    if (playerCenterX < tileCenterX)
                         playerPos.x -= overlap.width;
                     else
                         playerPos.x += overlap.width;
@@ -233,35 +255,45 @@ void Player::Colliding()
                     this->collision.x = playerPos.x + 9;
                 }
             }
-            if (tile->type == Tile::PIT && playerState != JUMPING)
-            {
-                playerState = FALLINGPIT;
-            }
         }
-    }
-    collision = {playerPos.x + 9, playerPos.y + 14, 6, 6};
-    // loop again for all nearbyTiles
-    for (Tile *tile : nearbyTiles)
-    {
-        // check for collision
+        // check to see if collsion was resolved, and if not run for the y-axis
         if (CheckCollisionRecs(this->collision, tile->shape))
         {
-            // check if should collide
-            if (ShouldCollide(*tile))
+            Rectangle overlap = GetCollisionRec(this->collision, tile->shape);
+            // check to see if height is more shallow
+            if (overlap.height < overlap.width)
             {
-                // get overlap of the collision boxes
-                Rectangle overlap = GetCollisionRec(this->collision, tile->shape);
-                /*if the collision is at the top of the tile push it out to the top,
-                otherwise, out to the bottom of the tile*/
-                if (this->collision.y < tile->shape.y)
-                    playerPos.y -= overlap.height;
-                else
-                    playerPos.y += overlap.height;
-                // update the collision's y position
-                this->collision.y = playerPos.y + 14;
+                // check if should collide
+                if (ShouldCollide(*tile))
+                {
+                    // get center points
+                    float playerCenterY = this->collision.y + (this->collision.height / 2.0f);
+                    float tileCenterY = tile->shape.y + (tile->shape.height / 2.0f);
+                    /*if the collision is at the top of the tile push it out to the top,
+                    otherwise, out to the bottom of the tile*/
+                    if (playerCenterY < tileCenterY)
+                        playerPos.y -= overlap.height;
+                    else
+                        playerPos.y += overlap.height;
+                    // update the collision's y position
+                    this->collision.y = playerPos.y + 14;
+                }
             }
         }
     }
+}
+
+// checks nearby tiles, and returns wheter or not a vaild collision is being made
+bool Player::IsColliding()
+{
+    for (Tile *tile : nearbyTiles)
+    {
+        if (ShouldCollide(*tile) && CheckCollisionRecs(this->collision, tile->shape))
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
 void Player::Jump()
@@ -271,6 +303,8 @@ void Player::Jump()
     {
         // if so move to the JUMPING state
         playerState = JUMPING;
+        // save the safe positon
+        lastPos = playerPos;
     }
 }
 
@@ -426,12 +460,31 @@ void Player::Update(float delta)
             }
         }
         break;
+    }
     case FALLINGPIT:
         animationState = fallingpit;
         if (playerRender.complete && playerRender.currentAnimation == "falling(pit)")
         {
             playerPos = {1 * 16, 2 * 16};
             playerState = IDLE;
+        }
+        break;
+    case SLIDING:
+    {
+        animationState = sliding;
+        Vector2 direction = {lastPos.x - playerPos.x, lastPos.y - playerPos.y};
+        Vector2 nomarlizedDir = Normalize(direction);
+        float distance = sqrtf(direction.x * direction.x + direction.y * direction.y);
+
+        if (distance < 1.0f || !IsColliding())
+        {
+            playerState = IDLE;
+        }
+        else
+        {
+            playerPos.x += nomarlizedDir.x * 100 * delta;
+            playerPos.y += nomarlizedDir.y * 100 * delta;
+            collision = {playerPos.x + 9, playerPos.y + 14, 6, 6};
         }
         break;
     }
@@ -443,7 +496,7 @@ void Player::Update(float delta)
     groundedTimer.Update();
     jumpBuffer.Update();
 
-    Colliding();
+    Collide();
 
     // play the current animation based off animation state and the current directon
     playerRender.playAnimation(animationChart[animationState][renderDir]);

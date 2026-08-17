@@ -12,18 +12,40 @@
 class Player
 {
 private:
+    // private functions
     void getDir();
     void Move(float speed, float delta);
     void Jump();
     void Attack();
+    void addAnimations();
     bool ShouldCollide(const Tile &tile);
     Vector2 Normalize(const Vector2 &oldDir) const;
 
+    // positioning
+    Vector2 lastPos;
+    Vector2 dir;
+    float curSpeed;
+    float zPos;
+
+    // timers
+    Timer hangTimer;
+    Timer groundedTimer;
+    Timer jumpBuffer;
+    Timer burrowTimer;
+    Timer burrowCooldown;
+
+    // time amout for timers
+    float hangTime;
+    float bufferAmount;
+
+    // attack
     Rectangle attackArea;
     bool attackActive;
+
+    // the players stats
     struct playerStats
     {
-        float acc = 300.0f;
+        float acc = 200.0f;
         float burrowTime = 1.0f;
         float burrowSpeed = 100.0f;
         float walkSpeed = 50.0f;
@@ -34,20 +56,8 @@ private:
         float jumpHeight = 12.0f;
     };
     playerStats stats;
-    bool burrowJump = false;
-    float curSpeed;
-    void addAnimations();
-    AnimatedSprite playerRender;
-    Vector2 dir;
-    float zPos;
-    Timer burrowTimer;
-    Timer burrowCooldown;
-    float hangTime;
-    Timer hangTimer;
-    Timer groundedTimer;
-    Timer jumpBuffer;
-    float bufferAmount;
-    bool grounded;
+
+    // player state logic
     enum PLAYERSTATE
     {
         IDLE,
@@ -55,8 +65,14 @@ private:
         BURROWING,
         JUMPING,
         ATTACKING,
-        FALLINGPIT
+        FALLINGPIT,
+        SLIDING
     };
+    PLAYERSTATE playerState;
+    bool burrowJump = false;
+    bool grounded;
+
+    // rendering logic
     enum ANIMATIONSTATE
     {
         idle = 0,
@@ -65,7 +81,8 @@ private:
         jumping,
         falling,
         attacking,
-        fallingpit
+        fallingpit,
+        sliding
     };
     enum RENDERDIR
     {
@@ -73,28 +90,30 @@ private:
         DOWN,
         HORIZONTAL
     };
-
-    Texture2D shadowTexture;
     ANIMATIONSTATE animationState;
     RENDERDIR renderDir;
-    PLAYERSTATE playerState;
-
-    std::string animationChart[7][3] = {{"idle(up)", "idle(down)", "idle(horizontal)"},
+    AnimatedSprite playerRender;
+    Texture2D shadowTexture;
+    std::string animationChart[8][3] = {{"idle(up)", "idle(down)", "idle(horizontal)"},
                                         {"walk(up)", "walk(down)", "walk(horizontal)"},
                                         {"burrow", "burrow", "burrow"},
                                         {"jump(up)", "jump(down)", "jump(horizontal)"},
                                         {"falling(up)", "falling(down)", "falling(horizontal)"},
                                         {"attack(up)", "attack(down)", "attack(horizontal)"},
-                                        {"falling(pit)", "falling(pit)", "falling(pit)"}};
+                                        {"falling(pit)", "falling(pit)", "falling(pit)"},
+                                        {"sliding", "sliding", "sliding"}};
 
 public:
     Rectangle collision;
     Vector2 playerPos;
+    // the list of tiles within range
     std::vector<Tile *> nearbyTiles;
+    // functions
     Player();
     void Draw();
     void Update(float delta);
-    void Colliding();
+    void Collide();
+    bool IsColliding();
 };
 
 #endif
