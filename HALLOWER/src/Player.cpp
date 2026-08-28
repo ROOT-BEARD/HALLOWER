@@ -11,7 +11,7 @@ Player::Player()
     animationState = idle;
     renderDir = DOWN;
     playerState = IDLE;
-    playerRender = AnimatedSprite("Art/playerSheet.png", Vector2{24, 24});
+    playerRender = AnimatedSprite(spriteSheet, Vector2{24, 24});
     shadowTexture = LoadTexture("Art/shadow.png");
     dir = Vector2{0.0f, 0.0f};
     zPos = 0;
@@ -27,6 +27,12 @@ Player::Player()
     attackArea = {playerPos.x, playerPos.y, 6, 6};
     attackActive = false;
     addAnimations();
+}
+
+Player::~Player()
+{
+    UnloadTexture(shadowTexture);
+    UnloadTexture(spriteSheet);
 }
 
 // adds all the animations that the player will use

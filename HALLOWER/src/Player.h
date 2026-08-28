@@ -1,11 +1,12 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
+#include <string>
+#include <vector>
+
 #include "raylib.h"
 #include "Timer.h"
 #include "AnimatedSprite.h"
-#include <string>
-#include "vector"
 #include "Tile.h"
 #include "WorldManager.h"
 
@@ -94,22 +95,24 @@ private:
     RENDERDIR renderDir;
     AnimatedSprite playerRender;
     Texture2D shadowTexture;
-    std::string animationChart[8][3] = {{"idle(up)", "idle(down)", "idle(horizontal)"},
-                                        {"walk(up)", "walk(down)", "walk(horizontal)"},
-                                        {"burrow", "burrow", "burrow"},
-                                        {"jump(up)", "jump(down)", "jump(horizontal)"},
-                                        {"falling(up)", "falling(down)", "falling(horizontal)"},
-                                        {"attack(up)", "attack(down)", "attack(horizontal)"},
-                                        {"falling(pit)", "falling(pit)", "falling(pit)"},
-                                        {"sliding", "sliding", "sliding"}};
+    static constexpr const char *animationChart[8][3] = {{"idle(up)", "idle(down)", "idle(horizontal)"},
+                                                         {"walk(up)", "walk(down)", "walk(horizontal)"},
+                                                         {"burrow", "burrow", "burrow"},
+                                                         {"jump(up)", "jump(down)", "jump(horizontal)"},
+                                                         {"falling(up)", "falling(down)", "falling(horizontal)"},
+                                                         {"attack(up)", "attack(down)", "attack(horizontal)"},
+                                                         {"falling(pit)", "falling(pit)", "falling(pit)"},
+                                                         {"sliding", "sliding", "sliding"}};
 
 public:
+    Texture2D spriteSheet = LoadTexture("Art/playerSheet.png");
     Rectangle collision;
     Vector2 playerPos;
     // the list of tiles within range
     std::vector<Tile *> nearbyTiles;
     // functions
     Player();
+    ~Player();
     void Draw();
     void Update(float delta);
     void Collide();

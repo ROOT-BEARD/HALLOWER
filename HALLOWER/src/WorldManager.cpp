@@ -5,11 +5,6 @@
 #include "Tile.h"
 #include "GrassTile.h"
 
-WorldManager::WorldManager()
-{
-    //
-}
-
 // creates the level based off an int array
 void WorldManager::createLevel(const std::vector<int> &levelLayout)
 {

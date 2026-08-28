@@ -9,6 +9,7 @@ public:
     Texture2D render;
     Vector2 position;
     GrassTile();
+    ~GrassTile();
     void Draw();
 };
 

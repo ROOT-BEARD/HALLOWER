@@ -12,7 +12,8 @@ private:
     GrassTile grassRenderer;
 
 public:
-    WorldManager(/* args */);
+    WorldManager() = default;
+    ~WorldManager() = default;
     std::vector<Tile> World;
     void createLevel(const std::vector<int> &levelLayout);
     void drawGrass(std::vector<Tile> &level);

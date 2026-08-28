@@ -8,6 +8,7 @@ public:
     float tarTime;
     bool running;
     Timer();
+    ~Timer() = default;
     Timer(float tarTime);
     void Start();
     bool TimeOut();

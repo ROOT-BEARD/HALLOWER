@@ -5,13 +5,9 @@
 #include "iostream"
 #include "string"
 
-AnimatedSprite::AnimatedSprite()
+AnimatedSprite::AnimatedSprite(Texture2D SpriteSheet, Vector2 spriteSize)
 {
-}
-
-AnimatedSprite::AnimatedSprite(std::string SpriteSheet, Vector2 spriteSize)
-{
-    this->SpriteSheet = LoadTexture(SpriteSheet.c_str());
+    this->SpriteSheet = SpriteSheet;
     SheetHeight = this->SpriteSheet.height;
     SheetWidth = this->SpriteSheet.width;
     this->spriteSize = spriteSize;
@@ -45,6 +41,9 @@ void AnimatedSprite::playAnimation(std::string name)
 
 void AnimatedSprite::Update()
 {
+    // checks edge cases
+    if (Animations.empty() || Animations[currentAnimation].fps <= 0)
+        return;
     frameCount++;
     int curfps = Animations[currentAnimation].fps;
     if (Animations[currentAnimation].looping || !Animations[currentAnimation].finished)

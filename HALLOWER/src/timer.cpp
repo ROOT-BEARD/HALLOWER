@@ -30,7 +30,8 @@ void Timer::Reset()
 
 bool Timer::TimeOut()
 {
-    if(!running) return false;
+    if (!running)
+        return false;
     return time >= tarTime;
 }
 
@@ -38,5 +39,6 @@ void Timer::Update()
 {
     if (running)
         time += GetFrameTime();
-        if(time >= tarTime) time = tarTime;
+    if (time >= tarTime)
+        time = tarTime;
 }
